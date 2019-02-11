@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8" />
+	<title>ScriptRPG</title>
+	<link rel="stylesheet" href="title.css">
+	<link rel="stylesheet" href="bootstrap/bootstrap.min.css">
+</head>
+<body onload="main()">
+	<template id="titleTemplate">
+		<div class="screen">
+			<canvas width="1024" height="480" id="titleCanvas"></canvas>
+		</div>
+		<div id="titleTextbox">
+			<div class="input-group input-group-sm">
+				<input id="titleText" type="text" class="form-control" placeholder="start( )" onanimationend="update({name: 'endShake'})">
+			</div>
+		</div>
+	</template>
+
+	<template id="loadTemplate">
+		<div class="screen">
+			<canvas width="1024" height="480" id="loadCanvas"></canvas>
+		</div>
+		<div id="loadTextbox">
+			<div class="input-group input-group-sm">
+				<input id="loadText" type="text" class="form-control">
+			</div>
+		</div>
+	</template>
+	
+	<div id="templateHere"></div>
+
+	<script src="utils.js"></script>
+	<script src="view.js"></script>
+	<script src="controller.js"></script>
+	<script src="model.js"></script>
+</body>
+</html>
