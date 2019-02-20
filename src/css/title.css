@@ -1,14 +1,14 @@
-#titleTextbox, #loadTextbox
+#titleTextbox
 {
 	position: absolute;
-	left: 40%;
-	top: 30%;
+	left: 45%;
+	top: 40%;
 	z-index: 1;
 	width: 14%;
 	caret-color: green;
 }
 
-#titleText, #loadText
+#titleText
 {
 	border: 1px solid gray;
 	border-radius: .2em;

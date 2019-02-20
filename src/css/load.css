@@ -1,0 +1,158 @@
+#loadCanvas
+{
+	border-top: 1px solid black;
+}
+
+#textboxSection
+{
+	position: absolute;
+	z-index: 1;
+	left: 5%;
+	top: 609px;
+	width: 20%;
+	caret-color: green;
+}
+
+#textbox
+{
+	border: 1px solid gray;
+	border-radius: .2em;
+	border: 1px solid black;
+}
+
+#textareaSection
+{
+	position: absolute;
+	left: 5%;
+	top: 0;
+	width: 20%;
+}
+
+#textarea
+{
+	height: 640px;
+	border: 1px solid black;
+}
+
+#chatSection
+{
+	position: absolute;
+	top: 640px;
+	left: 5%;
+	width: 1409px;
+}
+
+#chatArea
+{
+	height: 250px;
+	border: 1px solid black;
+}
+
+#minimapSection
+{
+	position: absolute;
+	left: 1504px;
+}
+
+#minimap
+{
+	border: 1px solid black;
+}
+
+#statsButtonRow
+{
+	position: absolute;
+	top: 300px;
+	left: 1504px;
+	border: 2px solid black;
+	z-index: 1;
+}
+
+#statsCanvas
+{
+	position: absolute;
+	top: 342px;
+	left: 1504px;
+	border: 1px solid black;
+}
+
+#skills
+{
+	background: url("../images/skills.png") no-repeat;
+}
+
+#inventory
+{
+	background: url("../images/inventory.png") no-repeat;
+}
+
+#equipment
+{
+	background: url("../images/equipment.png") no-repeat;
+}
+
+#scripts
+{
+	background: url("../images/scripts.png") no-repeat;
+}
+
+#stats
+{
+	background: url("../images/stats.png") no-repeat;
+}
+
+#settings
+{
+	background: url("../images/settings.png") no-repeat;
+}
+
+#skills, #inventory, #equipment, #scripts, #stats, #settings
+{
+	width: 40px;
+	height: 40px;
+	background-position: center; 
+	margin-right: 11px;
+	border: none;
+	outline: none;
+}
+
+.hovered:hover
+{
+	box-shadow: 2px 2px 2px 1px;
+}
+
+.statsActive
+{
+	background-color: rgba(93, 190, 239, .5) !important;
+}
+
+#skills:focus, #inventory:focus, #equipment:focus, #scripts:focus, #stats:focus, #settings:focus
+{
+	box-shadow: none;
+}
+
+#stats
+{
+	margin-right: 9px;
+}
+
+#settings
+{
+	margin-right: 0px;
+}
+
+textarea
+{
+	user-select: none;
+	resize: none;
+}
+
+textarea:focus
+{
+	cursor: default;
+}
+
+textarea:hover
+{
+	cursor: default;
+}
