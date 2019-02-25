@@ -72,11 +72,6 @@
 	-ms-user-select: none;
 }
 
-#statsButtonRow:hover
-{
-	cursor: default;
-}
-
 #statsCanvas
 {
 	position: absolute;
@@ -126,6 +121,11 @@
 	outline: none;
 }
 
+.hovered:hover
+{
+	box-shadow: 2px 2px 2px 1px;
+}
+
 .statsActive
 {
 	background-color: rgba(93, 190, 239, .5) !important;
@@ -134,11 +134,6 @@
 #skills:focus, #inventory:focus, #equipment:focus, #scripts:focus, #stats:focus, #settings:focus
 {
 	box-shadow: none;
-}
-
-#skills:hover, #inventory:hover, #equipment:hover, #scripts:hover, #stats:hover, #settings:hover
-{
-	cursor: default;
 }
 
 #stats

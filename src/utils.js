@@ -36,3 +36,7 @@ function border(canvas, color)
 	ctx.lineTo(0, -height);
 	ctx.stroke();
 }
+
+function capitalize(str) {
+	return str.charAt(0).toUpperCase() + str.slice(1);
+}

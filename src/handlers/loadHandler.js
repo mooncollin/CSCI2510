@@ -25,10 +25,17 @@ var loadStateHandler = {
 		this.minimapCtx.font = "30px Georgia";
 		positions = positionText(this.minimap.width, this.minimap.height, .3, .55);
 		this.minimapCtx.fillText("Minimap", positions.x, positions.y);
+
+		setTimeout(function() {
+			update({name: "next"});
+		}, 1000);
 	},
 	eventPump(event) {
 		switch(event.name) {
 			case "next":
+				state = states.GAME_STATE;
+				updateListeners.splice(updateListeners.indexOf(this), 1);
+				updateStateHandler();
 				break;
 			case "timer":
 				this.update();

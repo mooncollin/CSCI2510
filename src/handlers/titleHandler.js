@@ -32,8 +32,8 @@ var titleStateHandler = {
 				break;
 			case "checkText":
 				if(event.keyEvent.keyCode == 13) {
-					var startRe = /start\s*\(\s*\)$/;
-					if(startRe.test(this.titleTextbox.value)) {
+					let startRe = /start\s*\(\s*\);$/;
+					if(startRe.test(this.titleTextbox.value.trim())) {
 						update({name: "next"});
 					}
 					else {

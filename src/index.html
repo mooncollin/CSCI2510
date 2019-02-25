@@ -14,7 +14,7 @@
 		</div>
 		<div id="titleTextbox">
 			<div class="input-group input-group-sm">
-				<input id="titleText" type="text" class="form-control" placeholder="start( )" onanimationend="update({name: 'endShake'})">
+				<input id="titleText" type="text" class="form-control" placeholder="start( );" onanimationend="update({name: 'endShake'})">
 			</div>
 		</div>
 	</template>
@@ -23,6 +23,42 @@
 		<link rel="stylesheet" href="css/load.css">
 		<div class="screen">
 			<canvas width="1024" height="640" id="loadCanvas"></canvas>
+		</div>
+		<div id="textareaSection">
+			<div class="form-group">
+				<textarea id="textarea" disabled class="form-control"></textarea>
+			</div>
+		</div>
+		<div id="textboxSection">
+			<div class="input-group input-group-sm">
+				<input id="textbox" type="text" class="form-control">
+			</div>
+		</div>
+		<div id="chatSection">
+			<div class="form-group">
+				<textarea id="chatArea" disabled type="text" class="form-control"></textarea>
+			</div>
+		</div>
+		<div id="minimapSection">
+			<canvas width="317px" height="300px" id="minimap"></canvas>
+		</div>
+		<div id="statsSection">
+			<div id="statsButtonRow">
+				<button id="skills" class="btn btn-light statsActive"></button>
+				<button id="inventory" class="btn btn-light"></button>
+				<button id="equipment" class="btn btn-light"></button>
+				<button id="scripts" class="btn btn-light"></button>
+				<button id="stats" class="btn btn-light"></button>
+				<button id="settings" class="btn btn-light"></button>
+			</div>
+			<canvas width="317px" height="546px" id="statsCanvas"></canvas>
+		</div>
+	</template>
+
+	<template id="gameTemplate">
+		<link rel="stylesheet" href="css/game.css">
+		<div class="screen">
+			<canvas width="1024" height="640" id="gameCanvas"></canvas>
 		</div>
 		<div id="textareaSection">
 			<div class="form-group">
@@ -57,9 +93,19 @@
 	
 	<div id="templateHere"></div>
 
+	<script src="scripting/ByteCode.js"></script>
+	<script src="scripting/scripting.js"></script>
+	<script src="scripting/functions.js"></script>
+
 
 	<script src="handlers/titleHandler.js"></script>
 	<script src="handlers/loadHandler.js"></script>
+	<script src="handlers/gameHandler.js"></script>
+	<script src="Vector2.js"></script>
+	<script src="Transform.js"></script>
+	<script src="gameObjects/GameObject.js"></script>
+	<script src="gameObjects/Entity.js"></script>
+	<script src="gameObjects/Player.js"></script>
 
 	<script src="utils.js"></script>
 	<script src="view.js"></script>

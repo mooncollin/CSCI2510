@@ -5,6 +5,9 @@ function updateView() {
 	if(!loadTemplate) {
 		loadTemplate = document.getElementById("loadTemplate");
 	}
+	if(!gameTemplate) {
+		gameTemplate = document.getElementById("gameTemplate");
+	}
 
 	var clone;
 	if(state === states.TITLE_STATE) {
@@ -13,13 +16,16 @@ function updateView() {
 	else if(state === states.LOAD_STATE) {
 		clone = loadTemplate.content.cloneNode(true);
 	}
+	else if(state === states.GAME_STATE) {
+		clone = gameTemplate.content.cloneNode(true);
+	}
 
 	templateHere.innerHTML = "";
 	templateHere.appendChild(clone);
 }
 
 function changeStats(button) {
-	if(this.statButtons == null) {
+	if(!this.statButtons) {
 		this.statButtons = []
 		statButtons.push(document.getElementById("skills"));
 		statButtons.push(document.getElementById("inventory"));
@@ -34,6 +40,8 @@ function changeStats(button) {
 	}
 	button.classList.add("statsActive");
 	button.classList.remove("hovered");
+
+	update({name: "statChange"});
 }
 
 var titleTemplate;
