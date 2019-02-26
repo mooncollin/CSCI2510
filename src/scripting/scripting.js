@@ -115,10 +115,14 @@ class Script {
 
 	parseVar(arr) {
 		let name = arr[2];
-		if(this.getVariable(name) || this.getTempVariable(name)) {
+		let functionResults = this.parseFunctionCall(arr[3]);
+		if(functionResults instanceof Error) {
+			return functionResults;
+		}
+		else if(this.getVariable(name) || this.getTempVariable(name)) {
 			return new Error(ErrorNames.DUP_VAR, "Variable '" + name + "' already exists.", this._currentLine, this.name);
 		}
-		let value = this.parseValues(arr[3]);
+		let value = functionResults != null ? functionResults : this.parseValues(arr[3]);
 		if(value instanceof Error) {
 			return value;
 		}
@@ -141,10 +145,11 @@ class Script {
 
 	parseSet(arr) {
 		let name = arr[1];
-		if(!this.getVariable(name)) {
+		let functionResults = this.parseFunctionCall(arr[2]);
+		if(functionResults == null && !this.getVariable(name)) {
 			return new Error(ErrorNames.UNKNOWN_SYMBOL, "Cannot find symbol: " + name + ".", this._currentLine, this.name);
 		}
-		let value = this.parseValues(arr[2]);
+		let value = functionResults != null ? functionResults : this.parseValues(arr[2]);
 		if(value instanceof Error) {
 			return value;
 		}
@@ -300,6 +305,16 @@ class Script {
 			}
 		}
 		return [];
+	}
+
+	parseFunctionCall(funcStr) {
+		funcStr += ";";
+		let results = parseLine(funcStr);
+		if(results != null) {
+			results = this.parseCall(results.results);
+		}
+
+		return results;
 	}
 }
 

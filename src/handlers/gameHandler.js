@@ -17,6 +17,7 @@ var gameStateHandler = {
 		this.statsActive = document.getElementsByClassName("statsActive")[0].id;
 		this.textInput = document.getElementById("textbox");
 		this.interpreterOutput = document.getElementById("textarea");
+		this.chatOutput = document.getElementById("chatArea");
 		this.interpreterOutputArr = [];
 		this.functions = [];
 		this.variables = [];
@@ -46,6 +47,11 @@ var gameStateHandler = {
 		update({name: "addFunction", key: "moveLeft", value: moveLeft, status: Status.GAME});
 		update({name: "addFunction", key: "moveRight", value: moveRight, status: Status.GAME});
 		update({name: "addFunction", key: "clearVariables", value: clearVariables, status: Status.GAME});
+		update({name: "addFunction", key: "clearWindow", value: clearWindow, status: Status.GAME});
+		update({name: "addFunction", key: "print", value: print, status: Status.GAME});
+		update({name: "addFunction", key: "println", value: println, status: Status.GAME});
+		update({name: "addFunction", key: "printf", value: printf, status: Status.GAME});
+		update({name: "addFunction", key: "clearChat", value: clearChat, status: Status.GAME});
 		update({name: "addVariable", key: "globalFunctions", value: this.functions, status: Status.GAME});
 
 		this.interpreterVariables = []; // Doesn't do anything but fix script to keep variables alive
