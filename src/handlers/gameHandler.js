@@ -16,9 +16,14 @@ var gameStateHandler = {
 		this.statsCtx = this.stats.getContext("2d");
 		this.statsActive = document.getElementsByClassName("statsActive")[0].id;
 		this.textInput = document.getElementById("textbox");
+		this.interpreterOutput = document.getElementById("textarea");
+		this.interpreterOutputArr = [];
 		this.functions = [];
 		this.variables = [];
-		
+		this.history = [""];
+		this.currentHistoryIndex = 0;
+		this.MAX_HISTORY = 25;
+		this.MAX_INTERPRETER_OUTPUT = 25;
 
 		this.player = new Player();
 		this.player.transform.scale.x = 0.2;
@@ -40,19 +45,42 @@ var gameStateHandler = {
 		update({name: "addFunction", key: "moveDown", value: moveDown, status: Status.GAME});
 		update({name: "addFunction", key: "moveLeft", value: moveLeft, status: Status.GAME});
 		update({name: "addFunction", key: "moveRight", value: moveRight, status: Status.GAME});
+		update({name: "addFunction", key: "clearVariables", value: clearVariables, status: Status.GAME});
 		update({name: "addVariable", key: "globalFunctions", value: this.functions, status: Status.GAME});
-		update({name: "addVariable", key: "history", value: [], status: Status.GAME})
 
-		this.interpreterVariables = [];
-		this.interpreterScript = new Script("interpreter", "", Status.INTERPRETER, this.interpreterVariables);
+		this.interpreterVariables = []; // Doesn't do anything but fix script to keep variables alive
+		this.interpreterScript = new Script("interpreter", "", Status.INTERPRETER, this.interpreterVariables, null, interpreterCallback);
 		this.textInput.onkeypress = function(event) {
 			if(event.key === "Enter") {
 				gameStateHandler.interpreterScript.setCode(this.value);
 				let errors = gameStateHandler.interpreterScript.execute();
-				console.log(errors);
+				for(let i = 0; i < errors.length; i++) {
+					interpreterCallback(errors[i]);
+				}
+				gameStateHandler.history.splice(1, 0, this.value);
+				if(gameStateHandler.history.length > gameStateHandler.MAX_HISTORY) {
+					gameStateHandler.history.pop();
+				}
+				gameStateHandler.currentHistoryIndex = 0;
 				this.value = "";
 			}
 		};
+		this.textInput.onkeydown = function(event) {
+			if(event.key === "ArrowDown") {
+				gameStateHandler.currentHistoryIndex--;
+				if(gameStateHandler.currentHistoryIndex < 0) {
+					gameStateHandler.currentHistoryIndex = 0;
+				}
+				gameStateHandler.textInput.value = gameStateHandler.history[gameStateHandler.currentHistoryIndex];
+			}
+			else if(event.key === "ArrowUp") {
+				gameStateHandler.currentHistoryIndex++;
+				if(gameStateHandler.currentHistoryIndex >= gameStateHandler.history.length) {
+					gameStateHandler.currentHistoryIndex = gameStateHandler.history.length - 1;
+				}
+				gameStateHandler.textInput.value = gameStateHandler.history[gameStateHandler.currentHistoryIndex];
+			}
+		}
 	},
 	eventPump(event) {
 		switch(event.name) {
@@ -154,3 +182,30 @@ var gameStateHandler = {
 		this.ctx.restore();
 	}
 };
+
+function interpreterCallback(byteCode, funcValue) {
+	let output = null;
+	if(byteCode instanceof Error) {
+		output = "Error: " + byteCode.message;
+	}
+	else {
+		if(byteCode instanceof ByteCodeMAKE_VAR) {
+			output = "Created variable '" + byteCode.name + "' -> " + byteCode.getValue();
+		}
+		else if(byteCode instanceof ByteCodeSET_VAR || byteCode instanceof ByteCodeGET_VAR) {
+			output = "'" + byteCode.name + "' -> " + byteCode.getValue();
+		}
+		else if(byteCode instanceof Function) {
+			output = byteCode.name + "() -> " + funcValue;
+		}
+	}
+
+	if(output != null) {
+		gameStateHandler.interpreterOutputArr.push(output)
+		if(gameStateHandler.interpreterOutputArr.length > gameStateHandler.MAX_INTERPRETER_OUTPUT) {
+			gameStateHandler.interpreterOutputArr.shift();
+		}
+	}
+
+	gameStateHandler.interpreterOutput.value = gameStateHandler.interpreterOutputArr.join("\n");
+}

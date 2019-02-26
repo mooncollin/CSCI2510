@@ -108,13 +108,59 @@ class ByteCodeMAKE_VAR extends ByteCode {
 	}
 
 	execute() {
-		let currentVar = this.script.getVariable(this.name);
-		if(typeof this.value.getValue === "function") {
-			currentVar.variable = this.value.getValue();
+		let value = this.getValue();
+
+		this.script.variables.push(new Variable(this.name, value, this.script.status));
+		return value;
+	}
+
+	getValue() {
+		let realValue = this.value;
+		if(typeof realValue.getValue === "function") {
+			realValue = realValue.getValue();
 		}
-		else {
-			currentVar.variable = this.value;
+
+		return realValue;
+	}
+}
+
+class ByteCodeSET_VAR extends ByteCode {
+	constructor(name, value, script) {
+		super(CodeTypes.MAKE_VAR);
+		this.name = name;
+		this.value = value;
+		this.script = script;
+	}
+
+	execute() {
+		let value = this.getValue();
+		this.script.getVariable(this.name).variable = value;
+		return value;
+	}
+
+	getValue() {
+		let realValue = this.value;
+		if(typeof realValue.getValue === "function") {
+			realValue = realValue.getValue();
 		}
+
+		return realValue;
+	}
+}
+
+class ByteCodeGET_VAR extends ByteCode {
+	constructor(name, script) {
+		super(CodeTypes.GET);
+		this.name = name;
+		this.script = script;
+	}
+
+	execute() {
+		let value = this.script.getVariable(this.name).variable;
+		if(typeof value.getValue === "function") {
+			value = value.getValue();
+		}
+		return value;
 	}
 }
 

@@ -47,7 +47,5 @@ var loadStateHandler = {
 
 	},
 	render() {
-		this.statsCtx.fillStyle = "rgb(247, 222, 183)";
-		this.statsCtx.fillRect(0, 0, this.stats.width, this.stats.height);
 	}
 };

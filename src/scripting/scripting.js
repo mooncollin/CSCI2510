@@ -51,7 +51,7 @@ function precidence(operator1, operator2) {
 }
 
 class Script {
-	constructor(name, code, status, externalVariables=null, externalFunctions=null) {
+	constructor(name, code, status, externalVariables=null, externalFunctions=null, callback=null) {
 		this.name = name;
 		this.status = status;
 		if(externalVariables) {
@@ -62,6 +62,7 @@ class Script {
 			this.functions = externalFunctions.concat(gameStateHandler.functions);
 			this.externalFunctions = true;
 		}
+		this.callback = callback;
 		this.setCode(code);
 	}
 
@@ -70,6 +71,7 @@ class Script {
 		this.code = code;
 		this.byteCode = [];
 		this._currentLine = 0;
+		this._tempVariables = [];
 		if(!this.externalVariables) {
 			this.variables = [].concat(gameStateHandler.variables);
 		}
@@ -113,15 +115,15 @@ class Script {
 
 	parseVar(arr) {
 		let name = arr[2];
-		if(this.getVariable(name)) {
-			return new Error(ErrorNames.DUP_VAR, "Variable: '" + name + "' already exists.", this._currentLine, this.name);
+		if(this.getVariable(name) || this.getTempVariable(name)) {
+			return new Error(ErrorNames.DUP_VAR, "Variable '" + name + "' already exists.", this._currentLine, this.name);
 		}
 		let value = this.parseValues(arr[3]);
 		if(value instanceof Error) {
 			return value;
 		}
 		let byteCode = new ByteCodeMAKE_VAR(name, value, this);
-		this.variables.push(new Variable(name, null, this.status));
+		this._tempVariables.push(new Variable(name, null, this.status));
 		return byteCode;
 	}
 
@@ -130,19 +132,23 @@ class Script {
 	}
 	
 	parseGet(arr) {
-		console.log("Trying to get: " + arr);
+		let name = arr[1];
+		if(!this.getVariable(name) && !this.getTempVariable(name)) {
+			return new Error(ErrorNames.UNKNOWN_SYMBOL, "Cannot find symbol: " + name, this._currentLine, this.name);
+		}
+		return new ByteCodeGET_VAR(name, this);
 	}
 
 	parseSet(arr) {
 		let name = arr[1];
 		if(!this.getVariable(name)) {
-			return new Error(ErrorNames.UNKNOWN_SYMBOL, "Cannot find symbol: " + name, this._currentLine, this.name);
+			return new Error(ErrorNames.UNKNOWN_SYMBOL, "Cannot find symbol: " + name + ".", this._currentLine, this.name);
 		}
 		let value = this.parseValues(arr[2]);
 		if(value instanceof Error) {
 			return value;
 		}
-		let byteCode = new ByteCodeMAKE_VAR(name, value, this);
+		let byteCode = new ByteCodeSET_VAR(name, value, this);
 		return byteCode;
 	}
 
@@ -159,7 +165,11 @@ class Script {
 		}
 		let foundFunction = this.getFunction(name, args.length);
 		if(foundFunction === null) {
-			return new Error(ErrorNames.UNKNOWN_SYMBOL, "Cannot find symbol: " + name, this._currentLine, this.name);
+			return new Error(ErrorNames.UNKNOWN_SYMBOL, "Cannot find symbol: " + name + ".", this._currentLine, this.name);
+		}
+		if(foundFunction.length > args.length) {
+			let plural = foundFunction.length === 1 ? "" : "s";
+			return new Error(ErrorNames.INCORRECT_ARGS, foundFunction.name + " requires at least " + foundFunction.length + " argument" + plural + ", got " + args.length + ".", this._currentLine, this.name);
 		}
 
 		foundFunction.args = args;
@@ -206,10 +216,13 @@ class Script {
 		let strRegResults = stringRegEx.exec(val);
 		if(strRegResults != null) {
 			result = strRegResults[0];
-			result = result.replace("\\n", "\n");
-			result = result.replace("\\t", "\t");
-			result = result.replace("\\'", "'");
-			result = result.replace("\\\"", "\"");
+			result = result.slice(1, result.length - 1);
+			for(let i = 0; i < escapeCharactersReg.length; i++) {
+				let pair = escapeCharactersReg[i];
+				while(pair[0].test(result)) {
+					result = result.replace(pair[0], pair[1]);
+				}
+			}
 		}
 
 		if(result === null) {
@@ -220,9 +233,13 @@ class Script {
 		}
 
 		if(result === null) {
-			var variable = this.getVariable(val);
+			var variable = this.getTempVariable(val);
+			var variable2 = this.getVariable(val);
 			if(variable) {
 				result = variable;
+			}
+			else if(variable2) {
+				result = variable2;
 			}
 			else {
 				var func = this.getFunction(val);
@@ -249,6 +266,16 @@ class Script {
 		return null;
 	}
 
+	getTempVariable(variableName) {
+		for(let i = 0; i < this._tempVariables.length; i++) {
+			if(this._tempVariables[i].name === variableName) {
+				return this._tempVariables[i];
+			}
+		}
+
+		return null;
+	}
+
 	getFunction(name, numOfArgs) {
 		for(let i = 0; i < this.functions.length; i++) {
 			if(this.functions[i].name === name) {
@@ -263,8 +290,14 @@ class Script {
 		if(this.errors.length > 0) {
 			return this.errors;
 		}
+		
 		for(let i = 0; i < this.byteCode.length; i++) {
-			this.byteCode[i].execute();
+			
+			let value = this.byteCode[i].execute();
+			if(this.callback)
+			{
+				this.callback(this.byteCode[i], value);
+			}
 		}
 		return [];
 	}
@@ -300,3 +333,10 @@ var existingVarGet = /^([a-zA-Z_][a-zA-Z0-9_]*);/;
 var functionCall = /^([a-zA-Z_][a-zA-Z0-9_]*)\((.*?)\);/;
 var stringRegEx = /(?:^'(?:[^']|(?:\\'))*'$)|(?:^"(?:[^"]|(?:\\"))*"$)/;
 var valueSeparators = /[-+\/%*]/;
+
+var escapeCharactersReg = [
+	[/\\n/, "\n"],
+	[/\\t/, "\t"],
+	[/\\'/, "'"],
+	[/\\"/, "\""]
+];
