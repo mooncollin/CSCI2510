@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>Help</title>
+	<style>
+		.name {
+			font-weight: bold;
+			font-size: 1.5em;
+		}
+		.param {
+			font-family: 'Courier New', Courier, monospace
+		}
+		.return {
+			font-family: 'Courier New', Courier, monospace
+		}
+		.description {
+			font-size: 1.1em;
+		}
+	</style>
+</head>
+<body>
+	<template id="move">
+		<p class="name">move</p>
+		<p class="param">param x: horizontal distance</p>
+		<p class="param">param y: vertical distance</p>
+		<p class="return">return: true if the player moved, false otherwise</p>
+		<p class="description">
+			Moves the player x units horizontally and y units vertically. 
+			Negative numbers moves in the opposite direction of positive numbers.
+		</p>
+	</template>
+
+	<template id="clearVariables">
+		<p class="name">clearVariables</p>
+		<p class="return">return: true if variables were cleared, false if none were cleared</p>
+		<p class="description">
+			Clears the interpreter of all of its variables created by the player.
+		</p>
+	</template>
+
+	<template id="clearWindow">
+		<p class="name">clearWindow</p>
+		<p class="return">return: true if content was cleared, false otherwise</p>
+		<p class="description">
+			Clears the interpreter window of all text.
+		</p>
+	</template>
+
+	<template id="print">
+		<p class="name">print</p>
+		<p class="param">param output: Text to be printed</p>
+		<p class="return">return: true if printed successfully, false otherwise</p>
+		<p class="description">
+			Prints the given parameter to the chat window.
+		</p>
+	</template>
+
+	<template id="println">
+		<p class="name">println</p>
+		<p class="param">param output: Text to be printed</p>
+		<p class="return">return: true if printed successfully, false otherwise</p>
+		<p class="description">
+			Prints the given parameter to the chat window, with a newline after it.
+		</p>
+	</template>
+
+	<template id="printf">
+		<p class="name">printf</p>
+		<p class="param">param output: Text to be printed</p>
+		<p class="param">param args: Variable length arguments to print</p>
+		<p class="return">
+			return: true if printed successfully, false otherwise. 
+			Unmatched braces with arguments will not print.
+		</p>
+		<p class="description">
+			Prints the given parameter to the chat window.
+			The string can have "{}" symbols in the output string, and 
+			the given args will replace those braces. Write "\{}" to print an 
+			actual set of braces.<br>
+			Usage example: printf("1 + 1 = {}", 1+1);<br>
+			This will print: 2
+		</p>
+	</template>
+
+	<template id="clearChat">
+		<p class="name">clearChat</p>
+		<p class="return">return: true if anything was cleared in the chat window, false otherwise</p>
+		<p class="description">
+			Clears the chat window.
+		</p>
+	</template>
+
+	<template id="equals">
+		<p class="name">equals</p>
+		<p class="param">param var1: first variable</p>
+		<p class="param">param var2: second variable</p>
+		<p class="return">return: true if the two variables are true, false otherwise</p>
+		<p class="description">
+			Checks if two variables are equal in value.
+		</p>
+	</template>
+
+	<template id="help">
+		<p class="name">help</p>
+		<p class="param">optional param functionName: name of the function to find help for. Can be left out to see help for all functions.</p>
+		<p class="return">return: true if help for that function came up, false otherwise</p>
+		<p class="description">
+			Gets documentation on functions provided by the game.
+		</p>
+	</template>
+
+	<div id="placeholderTemplate">
+
+	</div>
+
+	<script>
+		function getUrlVars() {
+			let vars = {};
+			window.location.href.replace(/[?&]+([^=&]+)=([^&]*)/gi, function(m, key, value){
+				vars[key] = value;
+			});
+			return vars;
+		}
+		let functionNames = ["move",
+			"clearVariables", "clearWindow", "print",
+			"println", "printf", "equals", "help"];
+		
+		let names = getUrlVars();
+		let foundFunction = [];
+		let placingTemplate = document.getElementById("placeholderTemplate");
+		if(names["functionName"] === "") {
+			foundFunction = functionNames;
+		}
+		else {
+			foundFunction.push(names["functionName"]);
+		}
+
+		foundFunction = foundFunction.sort();
+
+		for(let i = 0; i < foundFunction.length; i++) {
+			let template = document.getElementById(foundFunction[i]);
+			placingTemplate.appendChild(template.content.cloneNode(true));
+			placingTemplate.appendChild(document.createElement("hr"));
+		}
+	</script>
+</body>
+</html>

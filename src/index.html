@@ -31,7 +31,7 @@
 		</div>
 		<div id="textboxSection">
 			<div class="input-group input-group-sm">
-				<input id="textbox" type="text" class="form-control">
+				<input id="textbox" type="text" class="form-control" disabled>
 			</div>
 		</div>
 		<div id="chatSection">
@@ -101,9 +101,20 @@
 	<script src="handlers/titleHandler.js"></script>
 	<script src="handlers/loadHandler.js"></script>
 	<script src="handlers/gameHandler.js"></script>
-	<script src="Vector2.js"></script>
-	<script src="Transform.js"></script>
+
+	<script src="geometry/Vector2.js"></script>
+	<script src="gameObjects/Transform.js"></script>
+	<script src="geometry/Geometry.js"></script>
+	<script src="geometry/AxisAlignedRectangle.js"></script>
+
+	<script src="components/Component.js"></script>
+	<script src="components/RendererComponent.js"></script>
+	<script src="components/GeometryComponent.js"></script>
+	<script src="components/GeometryRendererComponent.js"></script>
+
 	<script src="gameObjects/GameObject.js"></script>
+	<script src="gameObjects/Item.js"></script>
+	<script src="gameObjects/equipment/Equipment.js"></script>
 	<script src="gameObjects/Entity.js"></script>
 	<script src="gameObjects/Player.js"></script>
 

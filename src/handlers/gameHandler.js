@@ -14,6 +14,8 @@ var gameStateHandler = {
 		this.ctx = this.canvas.getContext("2d");
 		this.miniCtx = this.minimap.getContext("2d");
 		this.statsCtx = this.stats.getContext("2d");
+		this.statsWidth = this.stats.width;
+		this.statsHeight = this.stats.height;
 		this.statsActive = document.getElementsByClassName("statsActive")[0].id;
 		this.textInput = document.getElementById("textbox");
 		this.interpreterOutput = document.getElementById("textarea");
@@ -29,10 +31,6 @@ var gameStateHandler = {
 		this.player = new Player();
 		this.player.transform.scale.x = 0.2;
 		this.player.transform.scale.y = 0.2;
-		this.player.render = (ctx) => {
-			ctx.fillStyle = "yellow";
-			ctx.fillRect(-1, -1, 2, 2);
-		};
 		this.cameraZoom = 30;
 		this.minimapZoom = 10;
 
@@ -42,33 +40,34 @@ var gameStateHandler = {
 		update({name: "statChange"});
 
 		
-		update({name: "addFunction", key: "moveUp", value: moveUp, status: Status.GAME});
-		update({name: "addFunction", key: "moveDown", value: moveDown, status: Status.GAME});
-		update({name: "addFunction", key: "moveLeft", value: moveLeft, status: Status.GAME});
-		update({name: "addFunction", key: "moveRight", value: moveRight, status: Status.GAME});
+		update({name: "addFunction", key: "move", value: move, status: Status.GAME});
 		update({name: "addFunction", key: "clearVariables", value: clearVariables, status: Status.GAME});
 		update({name: "addFunction", key: "clearWindow", value: clearWindow, status: Status.GAME});
 		update({name: "addFunction", key: "print", value: print, status: Status.GAME});
 		update({name: "addFunction", key: "println", value: println, status: Status.GAME});
 		update({name: "addFunction", key: "printf", value: printf, status: Status.GAME});
 		update({name: "addFunction", key: "clearChat", value: clearChat, status: Status.GAME});
-		update({name: "addVariable", key: "globalFunctions", value: this.functions, status: Status.GAME});
+		update({name: "addFunction", key: "equals", value: equals, status: Status.GAME});
+		update({name: "addFunction", key: "help", value: help, status: Status.GAME});
+
 
 		this.interpreterVariables = []; // Doesn't do anything but fix script to keep variables alive
 		this.interpreterScript = new Script("interpreter", "", Status.INTERPRETER, this.interpreterVariables, null, interpreterCallback);
 		this.textInput.onkeypress = function(event) {
 			if(event.key === "Enter") {
-				gameStateHandler.interpreterScript.setCode(this.value);
-				let errors = gameStateHandler.interpreterScript.execute();
-				for(let i = 0; i < errors.length; i++) {
-					interpreterCallback(errors[i]);
+				if(!gameStateHandler.interpreterScript.running) {
+					gameStateHandler.interpreterScript.setCode(this.value);
+					let errors = gameStateHandler.interpreterScript.execute();
+					for(let i = 0; i < errors.length; i++) {
+						interpreterCallback(errors[i]);
+					}
+					gameStateHandler.history.splice(1, 0, this.value);
+					if(gameStateHandler.history.length > gameStateHandler.MAX_HISTORY) {
+						gameStateHandler.history.pop();
+					}
+					gameStateHandler.currentHistoryIndex = 0;
+					this.value = "";
 				}
-				gameStateHandler.history.splice(1, 0, this.value);
-				if(gameStateHandler.history.length > gameStateHandler.MAX_HISTORY) {
-					gameStateHandler.history.pop();
-				}
-				gameStateHandler.currentHistoryIndex = 0;
-				this.value = "";
 			}
 		};
 		this.textInput.onkeydown = function(event) {
@@ -109,6 +108,13 @@ var gameStateHandler = {
 		}
 	},
 	update() {
+		if(this.hierachy) {
+			for(let i = 0; i < this.hierachy.length; i++) {
+				if(typeof this.hierachy[i].update === "function") {
+					this.hierachy[i].update();
+				}
+			}
+		}
 	},
 	render() {
 		this.renderGame();
@@ -120,6 +126,41 @@ var gameStateHandler = {
 		let textXPosition = (this.statWidth / 2) - (this.statsCtx.measureText(capitalize(this.statsActive)).width / 2);
 		positions = positionText(this.statWidth, this.statHeight, textXPosition, .07);
 		this.statsCtx.fillText(capitalize(this.statsActive), textXPosition, positions.y);
+
+		if(this.statsActive === "inventory") {
+			this.renderInventory();
+		}
+	},
+	renderInventory() {
+		this.statsCtx.fillStyle = "black";
+		
+		for(let i = 0; i < 6; i++) {
+			this.statsCtx.moveTo(0, (this.statsHeight/7) * (i + 1));
+			this.statsCtx.lineTo(this.statWidth, this.statsHeight/7 * (i + 1));
+			this.statsCtx.stroke();
+		}
+
+		for(let i = 0; i < 4; i++) {
+			this.statsCtx.moveTo((this.statsWidth/4) * (i +1), this.statsHeight/7);
+			this.statsCtx.lineTo((this.statsWidth/4) * (i +1), (this.statsHeight/7) * 6);
+			this.statsCtx.stroke();
+		}
+
+		for(let i = 0; i < this.player.inventory.length; i++) {
+			this.statsCtx.save();
+			{
+				// this.statsCtx.translate(this.statsWidth);
+			}
+			this.statsCtx.restore();
+		}
+
+		let coins_image = new Image();
+		coins_image.src = 'images/coins.png';
+		coins_image.onload = function() {
+			gameStateHandler.statsCtx.drawImage(coins_image, 
+				gameStateHandler.statsWidth / 14, (gameStateHandler.statHeight * (8/9)),
+				40, 40);
+		}
 	},
 	renderMinimap() {
 		this.miniCtx.fillStyle = "rgb(18, 158, 23)";
@@ -138,11 +179,11 @@ var gameStateHandler = {
 				{
 					for(let i = 0; i < this.hierachy.length; i++) {
 						let gameObject = this.hierachy[i];
-						if(typeof gameObject.renderMiniMap === 'function') {
+						if(typeof gameObject.renderMinimap === 'function') {
 							this.miniCtx.save();
 							this.miniCtx.translate(gameObject.transform.position.x, gameObject.transform.position.y);
 							this.miniCtx.scale(gameObject.transform.scale.x, gameObject.transform.scale.y);
-							gameObject.renderMiniMap(this.miniCtx);
+							gameObject.renderMinimap(this.miniCtx);
 							this.miniCtx.restore();
 						}
 					}
@@ -194,16 +235,14 @@ function interpreterCallback(byteCode, funcValue) {
 	if(byteCode instanceof Error) {
 		output = "Error: " + byteCode.message;
 	}
-	else {
-		if(byteCode instanceof ByteCodeMAKE_VAR) {
-			output = "Created variable '" + byteCode.name + "' -> " + byteCode.getValue();
-		}
-		else if(byteCode instanceof ByteCodeSET_VAR || byteCode instanceof ByteCodeGET_VAR) {
-			output = "'" + byteCode.name + "' -> " + byteCode.getValue();
-		}
-		else if(byteCode instanceof Function) {
-			output = byteCode.name + "() -> " + funcValue;
-		}
+	else if(byteCode instanceof ByteCodeMAKE_VAR) {
+		output = "Created variable '" + byteCode.name + "' -> " + byteCode.getValue();
+	}
+	else if(byteCode instanceof ByteCodeSET_VAR || byteCode instanceof ByteCodeGET_VAR) {
+		output = "'" + byteCode.name + "' -> " + byteCode.getValue();
+	}
+	else if(byteCode instanceof Function) {
+		output = byteCode.name + "() -> " + funcValue;
 	}
 
 	if(output != null) {

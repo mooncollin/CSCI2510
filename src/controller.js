@@ -1,5 +1,5 @@
 function main() {
-	setInterval(timer, 1000 / 30);
+	setInterval(timer, msBetweenFrames);
 }
 
 function timer() {
@@ -13,3 +13,6 @@ function update(event) {
 }
 
 var updateListeners = [];
+var msBetweenFrames = 1000 / 30;
+var Time = {};
+Time.deltaTime = msBetweenFrames / 1000;

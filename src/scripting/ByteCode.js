@@ -44,6 +44,10 @@ class Function extends Variable {
 	getValue() {
 		return this.execute();
 	}
+
+	getFunctionVariable() {
+		return this.variable;
+	}
 }
 
 class ByteCode {
@@ -92,6 +96,18 @@ class ByteCodeOPERATOR extends ByteCode {
 				break;
 			case OperatorTypes.MOD:
 				result = value1 % value2;
+				break;
+			case OperatorTypes.AND:
+				result = value1 && value2;
+				break;
+			case OperatorTypes.OR:
+				result = value1 || value2;
+				break;
+			case OperatorTypes.GREATER:
+				result = value1 > value2;
+				break;
+			case OperatorTypes.LESSER:
+				result = value1 < value2;
 				break;
 		}
 
@@ -194,6 +210,7 @@ var CodeTypes = {
 	CALL: "call",
 	MAKE_VAR: "var",
 	MAKE_FUNCTION: "function",
+	SET: "set"
 };
 
 var OperatorTypes = {
@@ -201,5 +218,9 @@ var OperatorTypes = {
 	SUBSTRACT: "-",
 	MULTIPLY: "*",
 	DIVIDE: "/",
-	MOD: "%"
+	MOD: "%",
+	AND: "&",
+	OR: "|",
+	GREATER: ">",
+	LESSER: "<"
 }

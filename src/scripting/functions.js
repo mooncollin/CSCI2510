@@ -1,25 +1,5 @@
-function moveUp(amount=1) {
-	let player = gameStateHandler.player;
-	player.transform.position.y += amount;
-	return true;
-}
-
-function moveDown(amount=1) {
-	let player = gameStateHandler.player;
-	player.transform.position.y -= amount;
-	return true;
-}
-
-function moveLeft(amount=1) {
-	let player = gameStateHandler.player;
-	player.transform.position.x -= amount;
-	return true;
-}
-
-function moveRight(amount=1) {
-	let player = gameStateHandler.player;
-	player.transform.position.x += amount;
-	return true;
+function move(x, y) {
+	return gameStateHandler.player.updateMove(x, y);
 }
 
 function clearVariables() {
@@ -46,9 +26,8 @@ function println(output) {
 }
 
 function printf(output, ...args) {
-	let formatReg = /{}/;
-	let indexFound = output.search(formatReg);
-	let escapedAreas = [];
+	output = String(output);
+	let indexFound = output.indexOf("{}", 0);
 	let argsCount = 0;
 	while(indexFound != -1) {
 		if(indexFound == 0 || output.charAt(indexFound - 1) != "\\") {
@@ -59,18 +38,10 @@ function printf(output, ...args) {
 			argsCount++;
 		}
 		else {
-			escapedAreas.push(indexFound);
-			output = output.slice(0, indexFound-1) + output.slice(indexFound+3);
+			output = output.slice(0, indexFound-1) + output.slice(indexFound);
 		}
 
-		indexFound = output.search(formatReg);
-	}
-	for(let i = 0; i < escapedAreas.length; i++) {
-		output = output.slice(0, escapedAreas[i]-1) + "{}" + output.slice(escapedAreas[i]-2);
-		console.log(output);
-		for(let j = i+1; j < escapedAreas.length; j++) {
-			escapedAreas[j] += 3;
-		}
+		indexFound = output.indexOf("{}", indexFound+2);
 	}
 	
 	return print(output);
@@ -81,4 +52,29 @@ function clearChat() {
 	let previousString = chatWindow.value;
 	chatWindow.value = "";
 	return previousString != chatWindow.value;
+}
+
+function equals(var1, var2) {
+	return var1 === var2;
+}
+
+function help(functionName="") {
+	functionName = functionName === 0 ? "" : functionName;
+	let found = false;
+	if(functionName != "") {
+		for(let i = 0; i < gameStateHandler.functions.length; i++) {
+			if(functionName === gameStateHandler.functions[i].name) {
+				found = true;
+				break;
+			}
+		}
+	}
+	else {
+		found = true;
+	}
+	if(!found) {
+		return false;
+	}
+	let helpWindow = window.open("scripting/help.html?functionName=" + functionName, "Help");
+	return true;
 }
