@@ -34,7 +34,6 @@ function parseCode(code, lineNum=null, scriptName=null) {
 			results.push(new Error(ErrorNames.INVALID_SYNTAX, "Invalid Syntax: " + lines[i], lineNum, scriptName));
 		}
 	}
-
 	return results;
 }
 
@@ -53,10 +52,11 @@ function parseFunctionArgs(functionSig) {
 	let args = [];
 	let string = null;
 	let start = 0;
+	let inFunctionCall = false;
 	for(let i = 0; i < functionArgs.length; i++) {
 		let currentChar = functionArgs.charAt(i);
 		if(currentChar === ",") {
-			if(!string) {
+			if(!string && !inFunctionCall) {
 				args.push(functionArgs.slice(start, i).trim());
 				start = i+1;
 			}
@@ -70,6 +70,12 @@ function parseFunctionArgs(functionSig) {
 					string = null;
 				}
 			}
+		}
+		else if(currentChar === "(") {
+			inFunctionCall = true;
+		}
+		else if(currentChar === ")") {
+			inFunctionCall = false;
 		}
 	}
 	args.push(functionArgs.slice(start).trim());

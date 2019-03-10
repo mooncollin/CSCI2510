@@ -26,9 +26,29 @@ var loadStateHandler = {
 		positions = positionText(this.minimap.width, this.minimap.height, .3, .55);
 		this.minimapCtx.fillText("Minimap", positions.x, positions.y);
 
-		setTimeout(function() {
-			update({name: "next"});
-		}, 1000);
+		let allImages = [];
+		equipmentImages = {};
+		equipmentImages.background = new Image();
+		equipmentImages.background.src = 'images/equipment/equipmentBackground.png';
+		allImages.push(equipmentImages.background);
+		for(let i = 0; i < EQUIPMENT_TYPES.length; i++) {
+			equipmentImages[EQUIPMENT_TYPES[i]] = new Image();
+			equipmentImages[EQUIPMENT_TYPES[i]].src = 'images/equipment/' + EQUIPMENT_TYPES[i] + '.png';
+			allImages.push(equipmentImages[EQUIPMENT_TYPES[i]]);
+		}
+
+		let imagesLoaded = false;
+		while(!imagesLoaded) {
+			imagesLoaded = true;
+			for(let i = 0; i < allImages.length; i++) {
+				if(!allImages[i].complete) {
+					allImages = false;
+					break;
+				}
+			}
+		}
+
+		update({name: "next"});
 	},
 	eventPump(event) {
 		switch(event.name) {

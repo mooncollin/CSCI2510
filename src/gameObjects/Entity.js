@@ -1,13 +1,27 @@
 class Entity extends GameObject {
 	constructor() {
 		super();
+
+		this.equipmentTransforms = {};
+		for(let i = 0; i < EQUIPMENT_TYPES.length; i++) {
+			this.equipmentTransforms[EQUIPMENT_TYPES[i]] = [];
+		}
+
+		this.defineTransforms();
+
 		this.speed = 0;
+		this.level = 1;
 		this.health = 0;
 		this.inventory = {
 			"money" : 0,
 			"items" : []
 		};
-		this.equipment = noEquipment();
+		this.equipment = this.noEquipment();
+
+		for(let i = 0; i < EQUIPMENT_TYPES.length; i++) {
+			this.components.push(this.equipment[EQUIPMENT_TYPES[i]]);
+		}
+		
 		this.requestedX = null;
 		this.requestedY = null;
 	}
@@ -50,5 +64,23 @@ class Entity extends GameObject {
 				this.move(moveX, moveY);
 			}
 		}
+	}
+
+	noEquipment() {
+		var equip = noEquipment();
+		for(let i = 0; i < EQUIPMENT_TYPES.length; i++) {
+			let h = typeof equip[EQUIPMENT_TYPES[i]];
+			equip[EQUIPMENT_TYPES[i]].components = equip[EQUIPMENT_TYPES[i]].components.concat(this.nothingEquipmentSlot(EQUIPMENT_TYPES[i]));
+		}
+
+		return equip;
+	}
+
+	nothingEquipmentSlot(slot) {
+		return [];
+	}
+
+	defineTransforms() {
+
 	}
 }

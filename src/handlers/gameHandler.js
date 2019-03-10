@@ -14,8 +14,6 @@ var gameStateHandler = {
 		this.ctx = this.canvas.getContext("2d");
 		this.miniCtx = this.minimap.getContext("2d");
 		this.statsCtx = this.stats.getContext("2d");
-		this.statsWidth = this.stats.width;
-		this.statsHeight = this.stats.height;
 		this.statsActive = document.getElementsByClassName("statsActive")[0].id;
 		this.textInput = document.getElementById("textbox");
 		this.interpreterOutput = document.getElementById("textarea");
@@ -27,6 +25,7 @@ var gameStateHandler = {
 		this.currentHistoryIndex = 0;
 		this.MAX_HISTORY = 25;
 		this.MAX_INTERPRETER_OUTPUT = 25;
+		this.selectedInventory = 0;
 
 		this.player = new Player();
 		this.player.transform.scale.x = 0.2;
@@ -122,44 +121,111 @@ var gameStateHandler = {
 	},
 	renderStats() {
 		this.statsCtx.clearRect(0, 0, this.statWidth, this.statHeight);
+		this.statsCtx.beginPath();
+
+		this.statsCtx.fillStyle = "black";
 		this.statsCtx.font = "20px Georgia";
 		let textXPosition = (this.statWidth / 2) - (this.statsCtx.measureText(capitalize(this.statsActive)).width / 2);
-		positions = positionText(this.statWidth, this.statHeight, textXPosition, .07);
+		let positions = positionText(this.statWidth, this.statHeight, textXPosition, .07);
 		this.statsCtx.fillText(capitalize(this.statsActive), textXPosition, positions.y);
 
 		if(this.statsActive === "inventory") {
-			this.renderInventory();
+			this.renderInventoryPage();
+		}
+		else if(this.statsActive === "stats") {
+			this.renderStatsPage();
+		}
+		else if(this.statsActive === "equipment") {
+			this.renderEquipmentPage();
 		}
 	},
-	renderInventory() {
+	renderInventoryPage() {
 		this.statsCtx.fillStyle = "black";
+
+		let numberOfRows = 5;
+		let numberOfColumns = 4;
 		
-		for(let i = 0; i < 6; i++) {
-			this.statsCtx.moveTo(0, (this.statsHeight/7) * (i + 1));
-			this.statsCtx.lineTo(this.statWidth, this.statsHeight/7 * (i + 1));
+		for(let i = 0; i < numberOfRows + 1; i++) {
+			this.statsCtx.moveTo(0, (this.statHeight/(numberOfRows + 2)) * (i + 1));
+			this.statsCtx.lineTo(this.statWidth, this.statHeight/(numberOfRows + 2) * (i + 1));
 			this.statsCtx.stroke();
 		}
 
-		for(let i = 0; i < 4; i++) {
-			this.statsCtx.moveTo((this.statsWidth/4) * (i +1), this.statsHeight/7);
-			this.statsCtx.lineTo((this.statsWidth/4) * (i +1), (this.statsHeight/7) * 6);
+		for(let i = 0; i < numberOfColumns - 1; i++) {
+			this.statsCtx.moveTo((this.statWidth/numberOfColumns) * (i +1), this.statHeight/(numberOfRows + 2));
+			this.statsCtx.lineTo((this.statWidth/numberOfColumns) * (i +1), (this.statHeight/(numberOfRows + 2)) * (numberOfRows + 1));
 			this.statsCtx.stroke();
 		}
 
-		for(let i = 0; i < this.player.inventory.length; i++) {
-			this.statsCtx.save();
-			{
-				// this.statsCtx.translate(this.statsWidth);
+		for(let i = 0; i < this.player.inventory.items.length; i++) {
+			let item = this.player.inventory.items[i];
+			if(item != null) {
+				let row = Math.floor(i / (numberOfRows - 1));
+				let col = i % numberOfColumns;
+				let xPosition = this.statWidth/numberOfColumns * col + 2;
+				let yPosition = (this.statHeight/(numberOfRows + 2)) * (row+1) + 2;
+				this.statsCtx.fillStyle = randomColor();
+				this.statsCtx.fillRect(xPosition, yPosition, 5, 5);
 			}
-			this.statsCtx.restore();
 		}
 
 		let coins_image = new Image();
-		coins_image.src = 'images/coins.png';
 		coins_image.onload = function() {
 			gameStateHandler.statsCtx.drawImage(coins_image, 
-				gameStateHandler.statsWidth / 14, (gameStateHandler.statHeight * (8/9)),
+				gameStateHandler.statWidth / 14, (gameStateHandler.statHeight * (8/9)),
 				40, 40);
+		}
+		coins_image.src = 'images/coins.png';
+		
+		this.statsCtx.font = "20px Georgia";
+		this.statsCtx.fillStyle = "green";
+		this.statsCtx.fillText(this.player.inventory.money, this.statWidth / 4, this.statHeight * (14/15));
+	},
+	renderStatsPage() {
+		this.statsCtx.fillStyle = "black";
+
+		this.statsCtx.moveTo(0, this.statHeight/8);
+		this.statsCtx.lineTo(this.statWidth, this.statHeight/8);
+		this.statsCtx.stroke();
+
+		let attributes = [
+			["Level", this.player.level],
+			["Health", this.player.health],
+			["Speed", this.player.speed],
+			["Number of scripts", this.player.scripts.length]
+		];
+
+		this.statsCtx.font = "20px Georgia";
+		for(let i = 0; i < attributes.length; i++) {
+			this.statsCtx.fillText(attributes[i][0] + ": " + attributes[i][1],
+				this.statWidth / 15, this.statHeight * ((i+1)/(attributes.length * 1.5)) + this.statHeight/8);
+		}
+
+		this.statsCtx.moveTo(0, this.statHeight * (7/8));
+		this.statsCtx.lineTo(this.statWidth, this.statHeight * (7/8));
+		this.statsCtx.stroke();
+	},
+	renderEquipmentPage() {
+		let equipmentImagesLocations = {
+			"head"		: [this.statWidth/2.4, this.statHeight/7],
+			"body"		: [this.statWidth/2.4, this.statHeight/3],
+			"waist"		: [this.statWidth/2.4, this.statHeight/2],
+			"legs"		: [this.statWidth/2.4, this.statHeight/1.5],
+			"feet"		: [this.statWidth/2.4, this.statHeight/1.2],
+			"weapon"	: [this.statWidth/9, this.statHeight/3],
+			"offhand"	: [this.statWidth/1.35, this.statHeight/3],
+			"back"		: [this.statWidth/9, this.statHeight/7],
+			"shoulders"	: [this.statWidth/1.35, this.statHeight/7],
+			"hands"		: [this.statWidth/9, this.statHeight/2],
+			"neck"		: [this.statWidth/9, this.statHeight/1.2],
+			"finger"	: [this.statWidth/1.35, this.statHeight/1.2]
+		};
+		let imageSize = 45;
+		let offset = 10;
+
+		for(let i = 0; i < EQUIPMENT_TYPES.length; i++) {
+			this.statsCtx.drawImage(equipmentImages.background, equipmentImagesLocations[EQUIPMENT_TYPES[i]][0], equipmentImagesLocations[EQUIPMENT_TYPES[i]][1], imageSize + offset, imageSize + offset);
+			this.statsCtx.drawImage(this.player.equipment[EQUIPMENT_TYPES[i]].image, equipmentImagesLocations[EQUIPMENT_TYPES[i]][0] + offset / 2, equipmentImagesLocations[EQUIPMENT_TYPES[i]][1] + offset / 2, imageSize, imageSize);
 		}
 	},
 	renderMinimap() {
