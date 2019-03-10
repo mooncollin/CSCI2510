@@ -79,7 +79,9 @@ function parseFunctionArgs(functionSig) {
 		}
 	}
 	args.push(functionArgs.slice(start).trim());
-
+	if(args.length === 1 && args[0] === "") {
+		args = [];
+	}
 	return args;
 }
 
@@ -406,6 +408,9 @@ class Script {
 					this.errors.push(new Error(ErrorNames.STACK_OVERFLOW, "Too much recursion", this._currentLine, this.name));
 					this.running = false;
 					return this.errors;
+				}
+				else {
+					console.log(error);
 				}
 			}
 			this._currentLine++;

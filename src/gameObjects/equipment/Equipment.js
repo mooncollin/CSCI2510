@@ -16,20 +16,33 @@ function noEquipment() {
 }
 
 function nothing(slot) {
-	return new Equipment("Nothing", "Nothing", 0, slot, equipmentImages[slot], {});
+	return new Equipment("Nothing", "Nothing", 0, slot, images.equipment[slot], {});
 }
 
 var EQUIPMENT_TYPES = [
-	"weapon",
+	"back",
 	"head",
+	"shoulders",
+	"weapon",
 	"body",
 	"offhand",
-	"legs",
-	"feet",
 	"hands",
-	"finger",
-	"neck",
-	"back",
 	"waist",
-	"shoulders"
+	"legs",
+	"neck",
+	"feet",
+	"finger"
 ];
+
+var EQUIPMENT_ATTRIBUTES = [
+	"defense",
+	"color"
+];
+
+var bodyItems = {
+	"rugged_shirt" : new Equipment("Rugged Shirt", "Grimy old shirt", 0, "body", null, {
+							"defense"	: 1,
+							"color"		: "brown"
+						})
+};
+

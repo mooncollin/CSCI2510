@@ -22,8 +22,8 @@
 <body>
 	<template id="move">
 		<p class="name">move</p>
-		<p class="param">param x: horizontal distance</p>
-		<p class="param">param y: vertical distance</p>
+		<p class="param">param 'x': horizontal distance</p>
+		<p class="param">param 'y': vertical distance</p>
 		<p class="return">return: true if the player moved, false otherwise</p>
 		<p class="description">
 			Moves the player x units horizontally and y units vertically. 
@@ -49,7 +49,7 @@
 
 	<template id="print">
 		<p class="name">print</p>
-		<p class="param">param output: Text to be printed</p>
+		<p class="param">param 'output': Text to be printed</p>
 		<p class="return">return: true if printed successfully, false otherwise</p>
 		<p class="description">
 			Prints the given parameter to the chat window.
@@ -58,7 +58,7 @@
 
 	<template id="println">
 		<p class="name">println</p>
-		<p class="param">param output: Text to be printed</p>
+		<p class="param">param 'output': Text to be printed</p>
 		<p class="return">return: true if printed successfully, false otherwise</p>
 		<p class="description">
 			Prints the given parameter to the chat window, with a newline after it.
@@ -67,8 +67,8 @@
 
 	<template id="printf">
 		<p class="name">printf</p>
-		<p class="param">param output: Text to be printed</p>
-		<p class="param">param args: Variable length arguments to print</p>
+		<p class="param">param 'output': Text to be printed</p>
+		<p class="param">param 'args': Variable length arguments to print</p>
 		<p class="return">
 			return: true if printed successfully, false otherwise. 
 			Unmatched braces with arguments will not print.
@@ -93,8 +93,8 @@
 
 	<template id="equals">
 		<p class="name">equals</p>
-		<p class="param">param var1: first variable</p>
-		<p class="param">param var2: second variable</p>
+		<p class="param">param 'var1': first variable</p>
+		<p class="param">param 'var2': second variable</p>
 		<p class="return">return: true if the two variables are true, false otherwise</p>
 		<p class="description">
 			Checks if two variables are equal in value.
@@ -103,10 +103,96 @@
 
 	<template id="help">
 		<p class="name">help</p>
-		<p class="param">optional param functionName: name of the function to find help for. Can be left out to see help for all functions.</p>
+		<p class="param">optional param 'functionName': name of the function to find help for. Can be left out to see help for all functions.</p>
 		<p class="return">return: true if help for that function came up, false otherwise</p>
 		<p class="description">
 			Gets documentation on functions provided by the game.
+		</p>
+	</template>
+
+	<template id="selectedEquipment">
+		<p class="name">selectedEquipment</p>
+		<p class="return">return: name of the selected equipment, or blank if not present</p>
+		<p class="description">
+			Gets the name of the currently selected equipment from the equipment page. If
+			the selected equipment slot is empty, then a blank string will be returned.
+		</p>
+	</template>
+
+	<template id="selectedInventory">
+		<p class="name">selectedInventory</p>
+		<p class="return">return: name of the selected inventory item, or blank if not present</p>
+		<p class="description">
+			Gets the name of the currently selected inventory from the inventory page. If 
+			the selected inventory slot is empty, then a blank string will be returned.
+		</p>
+	</template>
+
+	<template id="selectEquipment">
+		<p class="name">selectEquipment</p>
+		<p class="param">param 'select': Must be a string or a number.
+			<br>
+			If it is a string, it will attempt to find the first item that matches that name in the 
+			equipment page from your current selected marker and will select it.
+			<br>
+			If it is a number, it will attempt to select the equipment slot assigned to that number.
+			<br>
+			Equipment slots to numbers:
+			<ul>
+				<li>back		: 0</li>
+				<li>head		: 1</li>
+				<li>shoulders	: 2</li>
+				<li>weapon		: 3</li>
+				<li>body		: 4</li>
+				<li>offhand		: 5</li>
+				<li>hands		: 6</li>
+				<li>waist		: 7</li>
+				<li>legs		: 8</li>
+				<li>neck		: 9</li>
+				<li>feet		: 10</li>
+				<li>finger		: 11</li>
+			</ul>
+		</p>
+		<p class="return">return: true if successful in selecting the slot, false otherwise</p>
+		<p class="description">
+			Selects an equipment slot on the equipment page with the given parameter.
+			<br>
+			The parameter may be a string or a number. Information on what happens on each 
+			can be read in this entries's parameter section.
+		</p>
+	</template>
+
+	<template id="selectInventory">
+		<p class="name">selectInventory</p>
+		<p class="param">param 'select': Must be a string or a number.
+			<br>
+			If it is a string, it will attempt to find the first item that matches that name in the 
+			inventory page from your current selected marker and will select it.
+			<br>
+			If it is a number, it will attempt to select the inventory slot assigned to that number.
+			<br>
+			Upper left corner of the inventory page is slot 0. Lower right is slot 19. Slots are counted 
+			by rows first. Row 1 column 3 is slot number 2.
+		</p>
+		<p class="return">return: true if successful in selecting the slot, false otherwise</p>
+		<p class="description">
+			Selects an inventory slot on the inventory page with the given parameter.
+			<br>
+			The parameter may be a string or a number. Information on what happens on each 
+			can be read in this entries's parameter section.
+		</p>
+	</template>
+
+	<template id="unequip">
+		<p class="name">unequip</p>
+		<p class="param">optional param 'inventorySlot': The inventory slot to set the item in. Will default 
+			to the next available slot from slot number 0 if not given.
+		</p>
+		<p class="return">return: true if unequip was successful, false otherwise. A false value can happen 
+			if either the slot given if taken, your inventory is full, or the item cannot be unequip.
+		</p>
+		<p class="description">
+			Attempts to unequip the currently selected equipment slot into the given inventory slot.
 		</p>
 	</template>
 
@@ -123,8 +209,19 @@
 			return vars;
 		}
 		let functionNames = ["move",
-			"clearVariables", "clearWindow", "print",
-			"println", "printf", "equals", "help"];
+			"clearVariables",
+			"clearWindow",
+			"print",
+			"println",
+			"printf",
+			"equals",
+			"help",
+			"selectedEquipment",
+			"selectedInventory",
+			"selectEquipment",
+			"selectInventory",
+			"unequip"
+		];
 		
 		let names = getUrlVars();
 		let foundFunction = [];

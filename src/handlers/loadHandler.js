@@ -26,29 +26,53 @@ var loadStateHandler = {
 		positions = positionText(this.minimap.width, this.minimap.height, .3, .55);
 		this.minimapCtx.fillText("Minimap", positions.x, positions.y);
 
-		let allImages = [];
-		equipmentImages = {};
-		equipmentImages.background = new Image();
-		equipmentImages.background.src = 'images/equipment/equipmentBackground.png';
-		allImages.push(equipmentImages.background);
+		totalImages = 0;
+		loadedImages = 0;
+
+		images = {};
+
+		images.equipment = {};
+		images.equipment.background = new Image();
+		images.equipment.background.onload = loadImage;
+		images.equipment.background.src = 'images/equipment/equipmentBackground.png';
 		for(let i = 0; i < EQUIPMENT_TYPES.length; i++) {
-			equipmentImages[EQUIPMENT_TYPES[i]] = new Image();
-			equipmentImages[EQUIPMENT_TYPES[i]].src = 'images/equipment/' + EQUIPMENT_TYPES[i] + '.png';
-			allImages.push(equipmentImages[EQUIPMENT_TYPES[i]]);
+			images.equipment[EQUIPMENT_TYPES[i]] = new Image();
+			images.equipment[EQUIPMENT_TYPES[i]].onload = loadImage;
+			images.equipment[EQUIPMENT_TYPES[i]].src = 'images/equipment/' + EQUIPMENT_TYPES[i] + '.png';
 		}
 
-		let imagesLoaded = false;
-		while(!imagesLoaded) {
-			imagesLoaded = true;
-			for(let i = 0; i < allImages.length; i++) {
-				if(!allImages[i].complete) {
-					allImages = false;
-					break;
-				}
+		// BODY ITEMS
+		let bodyKeys = Object.keys(bodyItems);
+		for(let i = 0; i < bodyKeys.length; i++) {
+			images.equipment[bodyKeys[i]] = new Image();
+			images.equipment[bodyKeys[i]].onload = loadImage;
+			images.equipment[bodyKeys[i]].src = 'images/equipment/' + bodyKeys[i] + '.png';
+			bodyItems[bodyKeys[i]].image = images.equipment[bodyKeys[i]];
+		}
+
+		images.misc = {};
+		images.misc.select = new Image();
+		images.misc.select.onload = loadImage;
+		images.misc.select.src = 'images/highlight.png';
+		images.misc.money = new Image();
+		images.misc.money.onload = loadImage;
+		images.misc.money.src = 'images/coins.png';
+
+		let ke = Object.keys(images);
+
+		for(let i = 0; i < ke.length; i++) {
+			let subKeys = Object.keys(images[ke[i]]);
+			for(let h = 0; h < subKeys.length; h++) {
+				totalImages++;
 			}
 		}
 
-		update({name: "next"});
+		var imageLoadingInterval = setInterval(function() {
+			if(totalImages <= loadedImages) {
+				clearInterval(imageLoadingInterval);
+				update({name: "next"});
+			}
+		}, msBetweenFrames);
 	},
 	eventPump(event) {
 		switch(event.name) {
@@ -69,3 +93,7 @@ var loadStateHandler = {
 	render() {
 	}
 };
+
+function loadImage() {
+	loadedImages++;
+}

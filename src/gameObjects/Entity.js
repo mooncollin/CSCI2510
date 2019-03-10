@@ -18,12 +18,12 @@ class Entity extends GameObject {
 		};
 		this.equipment = this.noEquipment();
 
-		for(let i = 0; i < EQUIPMENT_TYPES.length; i++) {
-			this.components.push(this.equipment[EQUIPMENT_TYPES[i]]);
-		}
+		this.refreshEquipment();
 		
 		this.requestedX = null;
 		this.requestedY = null;
+		this.selectedInventory = 0;
+		this.selectedEquipment = 0;
 	}
 
 	move(x, y) {
@@ -69,8 +69,7 @@ class Entity extends GameObject {
 	noEquipment() {
 		var equip = noEquipment();
 		for(let i = 0; i < EQUIPMENT_TYPES.length; i++) {
-			let h = typeof equip[EQUIPMENT_TYPES[i]];
-			equip[EQUIPMENT_TYPES[i]].components = equip[EQUIPMENT_TYPES[i]].components.concat(this.nothingEquipmentSlot(EQUIPMENT_TYPES[i]));
+			equip[EQUIPMENT_TYPES[i]].components = this.nothingEquipmentSlot(EQUIPMENT_TYPES[i]);
 		}
 
 		return equip;
@@ -82,5 +81,59 @@ class Entity extends GameObject {
 
 	defineTransforms() {
 
+	}
+
+	getSelectedEquipment() {
+		return this.equipment[EQUIPMENT_TYPES[this.selectedEquipment]];
+	}
+
+	getSelectedInventory() {
+		if(this.selectedInventory < 0 || this.selectedInventory >= this.inventory.items.length) {
+			return null;
+		}
+
+		return this.inventory.items[this.selectedInventory];
+	}
+
+	equipmentPut(item, slot) {
+		if(this.equipment[slot] === undefined
+			|| (this.equipment[slot] != null && this.equipment[slot].name != "Nothing"))
+		{
+			return false;
+		}
+
+		this.equipment[slot] = item;
+		this.equipment[slot].components = this.nothingEquipmentSlot(slot);
+		for(let i = 0; i < this.equipment[slot].components.length; i++) {
+			this.equipment[slot].components[i].color = item.attributes.color;
+		}
+		this.refreshEquipment();
+		return true;
+	}
+
+	equipmentRemove(slot) {
+		if(this.equipment[slot] === undefined
+			|| (this.equipment[slot] != null && this.equipment[slot].name === "Nothing"))
+		{
+			return null;
+		}
+
+		let item = this.equipment[slot];
+		this.equipment[slot] = nothing(slot);
+		this.equipment[slot].components = this.nothingEquipmentSlot(slot);
+		this.refreshEquipment();
+		return item;
+	}
+
+	refreshEquipment() {
+		for(let i = 0; i < this.components.length; i++) {
+			if(this.components[i] instanceof Equipment) {
+				this.components.splice(i, 1);
+				i--;
+			}
+		}
+		for(let i = 0; i < EQUIPMENT_TYPES.length; i++) {
+			this.components.push(this.equipment[EQUIPMENT_TYPES[i]]);
+		}
 	}
 }

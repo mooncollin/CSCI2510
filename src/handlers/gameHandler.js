@@ -25,8 +25,23 @@ var gameStateHandler = {
 		this.currentHistoryIndex = 0;
 		this.MAX_HISTORY = 25;
 		this.MAX_INTERPRETER_OUTPUT = 25;
-		this.selectedInventory = 0;
 
+		this.equipmentImagesLocations = {
+			"head"		: [this.statWidth/2.4, this.statHeight/7],
+			"body"		: [this.statWidth/2.4, this.statHeight/3],
+			"waist"		: [this.statWidth/2.4, this.statHeight/2],
+			"legs"		: [this.statWidth/2.4, this.statHeight/1.5],
+			"feet"		: [this.statWidth/2.4, this.statHeight/1.2],
+			"weapon"	: [this.statWidth/9, this.statHeight/3],
+			"offhand"	: [this.statWidth/1.35, this.statHeight/3],
+			"back"		: [this.statWidth/9, this.statHeight/7],
+			"shoulders"	: [this.statWidth/1.35, this.statHeight/7],
+			"hands"		: [this.statWidth/9, this.statHeight/2],
+			"neck"		: [this.statWidth/9, this.statHeight/1.2],
+			"finger"	: [this.statWidth/1.35, this.statHeight/1.2]
+		};
+		
+		this.selectedInventory = 0;
 		this.player = new Player();
 		this.player.transform.scale.x = 0.2;
 		this.player.transform.scale.y = 0.2;
@@ -48,6 +63,11 @@ var gameStateHandler = {
 		update({name: "addFunction", key: "clearChat", value: clearChat, status: Status.GAME});
 		update({name: "addFunction", key: "equals", value: equals, status: Status.GAME});
 		update({name: "addFunction", key: "help", value: help, status: Status.GAME});
+		update({name: "addFunction", key: "selectedEquipment", value: selectedEquipment, status: Status.GAME});
+		update({name: "addFunction", key: "selectedInventory", value: selectedInventory, status: Status.GAME});
+		update({name: "addFunction", key: "selectEquipment", value: selectEquipment, status: Status.GAME});
+		update({name: "addFunction", key: "selectInventory", value: selectInventory, status: Status.GAME});
+		update({name: "addFunction", key: "unequip", value: unequip, status: Status.GAME});
 
 
 		this.interpreterVariables = []; // Doesn't do anything but fix script to keep variables alive
@@ -85,6 +105,8 @@ var gameStateHandler = {
 				gameStateHandler.textInput.value = gameStateHandler.history[gameStateHandler.currentHistoryIndex];
 			}
 		}
+
+		this.player.equipmentPut(bodyItems.rugged_shirt, "body");
 	},
 	eventPump(event) {
 		switch(event.name) {
@@ -95,6 +117,9 @@ var gameStateHandler = {
 				this.render();
 				break;
 			case "statChange":
+				if(event.statSwitch) {
+					document.getElementById(event.statSwitch).click();
+				}
 				this.statsActive = document.getElementsByClassName("statsActive")[0].id;
 				this.renderStats();
 				break;
@@ -165,21 +190,21 @@ var gameStateHandler = {
 				let xPosition = this.statWidth/numberOfColumns * col + 2;
 				let yPosition = (this.statHeight/(numberOfRows + 2)) * (row+1) + 2;
 				this.statsCtx.fillStyle = randomColor();
-				this.statsCtx.fillRect(xPosition, yPosition, 5, 5);
+				this.statsCtx.drawImage(item.image, xPosition, yPosition, this.statHeight/(numberOfRows + 2) - 2, this.statHeight/(numberOfRows + 2) - 2);
 			}
 		}
-
-		let coins_image = new Image();
-		coins_image.onload = function() {
-			gameStateHandler.statsCtx.drawImage(coins_image, 
-				gameStateHandler.statWidth / 14, (gameStateHandler.statHeight * (8/9)),
-				40, 40);
-		}
-		coins_image.src = 'images/coins.png';
+		this.statsCtx.drawImage(images.misc.money, gameStateHandler.statWidth / 14, (gameStateHandler.statHeight * (8/9)), 40, 40);
 		
 		this.statsCtx.font = "20px Georgia";
 		this.statsCtx.fillStyle = "green";
 		this.statsCtx.fillText(this.player.inventory.money, this.statWidth / 4, this.statHeight * (14/15));
+
+		let inventorySelect = this.player.selectedInventory;
+		let row = Math.floor(inventorySelect / (numberOfRows - 1));
+		let col = inventorySelect % numberOfColumns;
+		let xPosition = this.statWidth/numberOfColumns * col;
+		let yPosition = (this.statHeight/(numberOfRows + 2)) * (row+1);
+		this.statsCtx.drawImage(images.misc.select, xPosition, yPosition, this.statHeight/(numberOfRows + 2), this.statHeight/(numberOfRows + 2));
 	},
 	renderStatsPage() {
 		this.statsCtx.fillStyle = "black";
@@ -206,27 +231,18 @@ var gameStateHandler = {
 		this.statsCtx.stroke();
 	},
 	renderEquipmentPage() {
-		let equipmentImagesLocations = {
-			"head"		: [this.statWidth/2.4, this.statHeight/7],
-			"body"		: [this.statWidth/2.4, this.statHeight/3],
-			"waist"		: [this.statWidth/2.4, this.statHeight/2],
-			"legs"		: [this.statWidth/2.4, this.statHeight/1.5],
-			"feet"		: [this.statWidth/2.4, this.statHeight/1.2],
-			"weapon"	: [this.statWidth/9, this.statHeight/3],
-			"offhand"	: [this.statWidth/1.35, this.statHeight/3],
-			"back"		: [this.statWidth/9, this.statHeight/7],
-			"shoulders"	: [this.statWidth/1.35, this.statHeight/7],
-			"hands"		: [this.statWidth/9, this.statHeight/2],
-			"neck"		: [this.statWidth/9, this.statHeight/1.2],
-			"finger"	: [this.statWidth/1.35, this.statHeight/1.2]
-		};
+		
 		let imageSize = 45;
 		let offset = 10;
 
 		for(let i = 0; i < EQUIPMENT_TYPES.length; i++) {
-			this.statsCtx.drawImage(equipmentImages.background, equipmentImagesLocations[EQUIPMENT_TYPES[i]][0], equipmentImagesLocations[EQUIPMENT_TYPES[i]][1], imageSize + offset, imageSize + offset);
-			this.statsCtx.drawImage(this.player.equipment[EQUIPMENT_TYPES[i]].image, equipmentImagesLocations[EQUIPMENT_TYPES[i]][0] + offset / 2, equipmentImagesLocations[EQUIPMENT_TYPES[i]][1] + offset / 2, imageSize, imageSize);
+			this.statsCtx.drawImage(images.equipment.background, this.equipmentImagesLocations[EQUIPMENT_TYPES[i]][0], this.equipmentImagesLocations[EQUIPMENT_TYPES[i]][1], imageSize + offset, imageSize + offset);
+			if(this.player.equipment[EQUIPMENT_TYPES[i]].image) {
+				this.statsCtx.drawImage(this.player.equipment[EQUIPMENT_TYPES[i]].image, this.equipmentImagesLocations[EQUIPMENT_TYPES[i]][0] + offset / 2, this.equipmentImagesLocations[EQUIPMENT_TYPES[i]][1] + offset / 2, imageSize, imageSize);
+			}
 		}
+
+		this.statsCtx.drawImage(images.misc.select, this.equipmentImagesLocations[EQUIPMENT_TYPES[this.player.selectedEquipment]][0] - offset * .5, this.equipmentImagesLocations[EQUIPMENT_TYPES[this.player.selectedEquipment]][1] - offset * .5, imageSize + offset * 2, imageSize + offset * 2);
 	},
 	renderMinimap() {
 		this.miniCtx.fillStyle = "rgb(18, 158, 23)";
@@ -302,13 +318,36 @@ function interpreterCallback(byteCode, funcValue) {
 		output = "Error: " + byteCode.message;
 	}
 	else if(byteCode instanceof ByteCodeMAKE_VAR) {
-		output = "Created variable '" + byteCode.name + "' -> " + byteCode.getValue();
+		let value = byteCode.getValue();
+		output = "Created variable '" + byteCode.name + "' -> ";
+		if(typeof value === "string") {
+			output += "\"";
+		}
+		output += value;
+		if(typeof value === "string") {
+			output += "\"";
+		}
 	}
 	else if(byteCode instanceof ByteCodeSET_VAR || byteCode instanceof ByteCodeGET_VAR) {
-		output = "'" + byteCode.name + "' -> " + byteCode.getValue();
+		let value = byteCode.getValue();
+		output = "'" + byteCode.name + "' -> ";
+		if(typeof value === "string") {
+			output += "\"";
+		}
+		output += value;
+		if(typeof value === "string") {
+			output += "\"";
+		}
 	}
 	else if(byteCode instanceof Function) {
-		output = byteCode.name + "() -> " + funcValue;
+		output = byteCode.name + "() -> ";
+		if(typeof funcValue === "string") {
+			output += "\"";
+		}
+		output += funcValue;
+		if(typeof funcValue === "string") {
+			output += "\"";
+		}
 	}
 
 	if(output != null) {

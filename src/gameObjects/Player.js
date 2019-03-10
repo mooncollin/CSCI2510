@@ -70,4 +70,45 @@ class Player extends Entity {
 		this.equipmentTransforms["head"].push(new Transform(new Vector2(0, 6)));
 		this.equipmentTransforms["waist"].push(new Transform(new Vector2(0, 0)));
 	}
+
+	inventoryPut(item, index=-1) {
+		if(index < 0 || index >= this.inventory.items.length) {
+			for(let i = 0; i < this.inventory.items.length; i++) {
+				if(this.inventory.items[i] === null) {
+					this.inventory.items[i] = item;
+					return true;
+				}
+			}
+		}
+		else {
+			if(this.inventory.items[index] === null) {
+				this.inventory.items[index] = item;
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	inventoryRemove(index) {
+		if(index < 0 || index >= this.inventory.items.length) {
+			return null;
+		}
+
+		let item = this.inventory.items[index];
+		this.inventory.items[index] = null;
+		return item;
+	}
+
+	canInventoryPut(index) {
+		if(index < 0 || index >= this.inventory.items.length) {
+			for(let i = 0; i < this.inventory.items.length; i++) {
+				if(this.inventory.items[i] === null) {
+					return true;
+				}
+			}
+		}
+
+		return this.inventory.items[index] === null;
+	}	
 }
