@@ -23,15 +23,19 @@ function parseLine(code) {
 	return null;
 }
 
-function parseCode(code, lineNum=null, scriptName=null) {
+function parseCode(code, scriptName=null) {
 	let lines = code.split("\n");
 	let results = [];
+	let lineNum = 0;
 	for(let i = 0; i < lines.length; i++) {
-		let result = parseLine(lines[i]);
-		if(result) {
-			results.push(result);
-		} else {
-			results.push(new Error(ErrorNames.INVALID_SYNTAX, "Invalid Syntax: " + lines[i], lineNum, scriptName));
+		lineNum++;
+		if(lines[i] != "") {
+			let result = parseLine(lines[i]);
+			if(result) {
+				results.push(result);
+			} else {
+				results.push(new Error(ErrorNames.INVALID_SYNTAX, "Invalid Syntax: " + lines[i], lineNum, scriptName));
+			}
 		}
 	}
 	return results;
@@ -132,11 +136,14 @@ class Script {
 		if(!this.externalFunctions) {
 			this.functions = [].concat(gameStateHandler.functions);
 		}
+		for(let i = 0; i < this.functions.length; i++) {
+			this.functions[i].script = this;
+		}
 		this.parseScript(code);
 	}
 
 	parseScript(code) {
-		let results = parseCode(code, this._currentLine, this.name);
+		let results = parseCode(code, this.name);
 		for(let i = 0; i < results.length; i++) {
 			this._currentLine++;
 			let result = results[i];
@@ -175,7 +182,8 @@ class Script {
 		else if(this.getVariable(name) || this.getTempVariable(name)) {
 			return new Error(ErrorNames.DUP_VAR, "Variable '" + name + "' already exists.", this._currentLine, this.name);
 		}
-		else if(this.getVariable(name) != null && this.getVariable(name).statuss === Status.GAME) {
+		else if(this.getVariable(name) != null && this.getVariable(name).status === Status.GAME
+				|| this.getTempVariable(name) != null && this.getTempVariable(name).status === Status.GAME) {
 			return new Error(ErrorNames.RESTRICTED, "Variable '" + name + "' is read-only.", this._currentLine, this.name);
 		}
 		let value = functionResults != null ? functionResults : this.parseValues(arr[3]);
@@ -183,7 +191,7 @@ class Script {
 			return value;
 		}
 		let byteCode = new ByteCodeMAKE_VAR(name, value, this);
-		this._tempVariables.push(new Variable(name, null, this.status));
+		this._tempVariables.push(new Variable(name, null, this.status, this));
 		return byteCode;
 	}
 
@@ -202,10 +210,11 @@ class Script {
 	parseSet(arr) {
 		let name = arr[1];
 		let functionResults = this.parseFunctionCall(arr[2]);
-		if(functionResults === null && this.getVariable(name) === null) {
+		if(functionResults === null && this.getVariable(name) === null && this.getTempVariable(name) === null) {
 			return new Error(ErrorNames.UNKNOWN_SYMBOL, "Cannot find symbol: " + name + ".", this._currentLine, this.name);
 		}
-		else if(this.getVariable(name).status === Status.GAME) {
+		else if((this.getVariable(name) && this.getVariable(name).status === Status.GAME)
+				|| (this.getTempVariable(name) && this.getTempVariable(name).status === Status.GAME)) {
 			return new Error(ErrorNames.RESTRICTED, "Variable '" + name + "' is read-only.", this._currentLine, this.name);
 		}
 		let value = functionResults != null ? functionResults : this.parseValues(arr[2]);
@@ -285,7 +294,7 @@ class Script {
 			}
 			let chosenOperator = separators.splice(currentOperator, 1)[0];
 			let chosenValues = tokens.splice(currentOperator, 2);
-			let byteOperator = new ByteCodeOPERATOR(values.charAt(chosenOperator), chosenValues[0], chosenValues[1]);
+			let byteOperator = new ByteCodeOPERATOR(values.charAt(chosenOperator), chosenValues[0], chosenValues[1], this);
 			tokens.splice(currentOperator, 0, byteOperator);
 		}
 
@@ -393,10 +402,24 @@ class Script {
 			this.running = false;
 			return this.errors;
 		}
+
+		if(!this.externalVariables) {
+			this.variables = [].concat(gameStateHandler.variables);
+		}
+		if(!this.externalFunctions) {
+			this.functions = [].concat(gameStateHandler.functions);
+		}
+		for(let i = 0; i < this.functions.length; i++) {
+			this.functions[i].script = this;
+		}
 		
 		for(let i = 0; i < this.byteCode.length; i++) {
 			
 			try {
+				if(typeof this.byteCode[i].moveFromTempVariables === "function") {
+					this.byteCode[i].script = this;
+					this.byteCode[i].moveFromTempVariables();
+				}
 				let value = this.byteCode[i].execute();
 				if(this.callback)
 				{

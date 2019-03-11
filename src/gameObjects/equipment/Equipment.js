@@ -16,7 +16,15 @@ function noEquipment() {
 }
 
 function nothing(slot) {
-	return new Equipment("Nothing", "Nothing", 0, slot, images.equipment[slot], {});
+	return new Equipment("Nothing", "Nothing", 0, slot, images.equipment[slot], baseAttributes());
+}
+
+function baseAttributes() {
+	return {
+		"defense"	: 0,
+		"color"		: "",
+		"type"		: "none"
+	};
 }
 
 var EQUIPMENT_TYPES = [
@@ -36,13 +44,14 @@ var EQUIPMENT_TYPES = [
 
 var EQUIPMENT_ATTRIBUTES = [
 	"defense",
-	"color"
+	"color",
+	"type"
 ];
 
 var bodyItems = {
 	"rugged_shirt" : new Equipment("Rugged Shirt", "Grimy old shirt", 0, "body", null, {
 							"defense"	: 1,
-							"color"		: "brown"
+							"color"		: "brown",
+							"type"		: "cloth"
 						})
 };
-

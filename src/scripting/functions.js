@@ -149,8 +149,8 @@ function selectInventory(select) {
 	return false;
 }
 
-function unequip(inventorySlot=-1) {
-	if(!gameStateHandler.player.canInventoryPut(inventorySlot)) {
+function unequip() {
+	if(!gameStateHandler.player.canInventoryPut(gameStateHandler.player.selectedInventory)) {
 		return false;
 	}
 	let item = gameStateHandler.player.equipmentRemove(EQUIPMENT_TYPES[gameStateHandler.player.selectedEquipment]);
@@ -158,7 +158,76 @@ function unequip(inventorySlot=-1) {
 		return false;
 	}
 
-	let result = gameStateHandler.player.inventoryPut(item, inventorySlot);
+	let result = gameStateHandler.player.inventoryPut(item, gameStateHandler.player.selectedInventory);
 	update({name: "statChange"});
 	return result;
+}
+
+function equip() {
+	let invenSlot = gameStateHandler.player.selectedInventory;
+	if(!gameStateHandler.player.canEquipmentPut(gameStateHandler.player.inventory.items[invenSlot])) {
+		return false;
+	}
+
+	let item = gameStateHandler.player.inventoryRemove(invenSlot);
+	if(item === null) {
+		return false;
+	}
+
+	let result = gameStateHandler.player.equipmentPut(item, item.slot)
+	update({name: "statChange"});
+	return result;
+}
+
+function openScript(name) {
+	let script = gameStateHandler.player.getScript(name);
+
+	if(script === null) {
+		return false;
+	}
+
+	if(gameStateHandler.openedScript != null) {
+		closeScript();
+	}
+
+	gameStateHandler.textareaSection.innerHTML = "";
+	gameStateHandler.textareaSection.appendChild(gameStateHandler.scriptTemplate.content.cloneNode(true));
+	gameStateHandler.scriptOutput = document.getElementById("script");
+	gameStateHandler.scriptOutput.value = script.code;
+	gameStateHandler.openedScript = script;
+
+	return true;
+}
+
+function closeScript() {
+	if(gameStateHandler.openedScript === null) {
+		return false;
+	}
+
+	gameStateHandler.openedScript.setCode(gameStateHandler.scriptOutput.value);
+	gameStateHandler.textareaSection.innerHTML = "";
+	gameStateHandler.textareaSection.appendChild(gameStateHandler.interpreterTemplate.content.cloneNode(true));
+	gameStateHandler.interpreterOutput = document.getElementById("textarea");
+	update({name: "interpreterOutput", output:null});
+	gameStateHandler.openedScript = null;
+
+	return true;
+}
+
+function executeScript(name) {
+	let script = gameStateHandler.player.getScript(name);
+
+	if(script === null) {
+		return false;
+	}
+
+	let errors = script.execute();
+	if(errors.length > 0) {
+		update({name: "interpreterOutput", output: "'" + script.name + "' Errors:"});
+	}
+	for(let i = 0; i < errors.length; i++) {
+		scriptCallback(errors[i], null, "\t", " - line " + errors[i].lineNum);
+	}
+
+	return true;
 }

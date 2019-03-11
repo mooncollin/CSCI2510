@@ -95,6 +95,10 @@ class Entity extends GameObject {
 		return this.inventory.items[this.selectedInventory];
 	}
 
+	canEquipmentPut(item) {
+		return item instanceof Equipment && this.equipment[item.slot].name === "Nothing";
+	}
+
 	equipmentPut(item, slot) {
 		if(this.equipment[slot] === undefined
 			|| (this.equipment[slot] != null && this.equipment[slot].name != "Nothing"))

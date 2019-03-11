@@ -185,14 +185,38 @@
 
 	<template id="unequip">
 		<p class="name">unequip</p>
-		<p class="param">optional param 'inventorySlot': The inventory slot to set the item in. Will default 
-			to the next available slot from slot number 0 if not given.
-		</p>
 		<p class="return">return: true if unequip was successful, false otherwise. A false value can happen 
 			if either the slot given if taken, your inventory is full, or the item cannot be unequip.
 		</p>
 		<p class="description">
-			Attempts to unequip the currently selected equipment slot into the given inventory slot.
+			Attempts to unequip the currently selected equipment slot into the currently selected inventory slot.
+		</p>
+	</template>
+
+	<template id="equip">
+		<p class="name">equip</p>
+		<p class="return">return: true if equip was successful, false otherwise</p>
+		<p class="description">
+			Attempts to equip the current selected inventory slot item to the slot that item goes in. Will 
+			fail if the item is unequipable, or the current slot is taken.
+		</p>
+	</template>
+
+	<template id="openScript">
+		<p class="name">openScript</p>
+		<p class="param">param 'name': The name of the script to open</p>
+		<p class="return">return: true if the script successfully opened, false otherwise</p>
+		<p class="description">
+			Attempts to open the script given. If another script is opened, it will save and close that and 
+			open the given one.
+		</p>
+	</template>
+
+	<template id="closeScript">
+		<p class="name">closeScript</p>
+		<p class="return">return: true if the currently opened script successfully close, false otherwise</p>
+		<p class="description">
+			Closes the currently opened script.
 		</p>
 	</template>
 
@@ -220,7 +244,10 @@
 			"selectedInventory",
 			"selectEquipment",
 			"selectInventory",
-			"unequip"
+			"unequip",
+			"equip",
+			"openScript",
+			"closeScript"
 		];
 		
 		let names = getUrlVars();

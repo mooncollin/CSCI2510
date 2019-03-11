@@ -4,3 +4,18 @@
 	top: 0;
 	left: 25%;
 }
+
+html, #textarea, #chatArea
+{
+	cursor: url(../images/redCursor.png) 9 9, auto;
+}
+
+input[type='text'], #script
+{
+	cursor: url(../images/blueCursor.png) 9 9, auto;
+}
+
+#skills, #inventory, #equipment, #scripts, #stats, #settings
+{
+	cursor: url(../images/greenCursor.png) 9 9, auto;
+}

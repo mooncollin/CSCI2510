@@ -28,7 +28,7 @@
 	width: 20%;
 }
 
-#textarea
+#textarea, #script
 {
 	height: 640px;
 	border: 1px solid black;

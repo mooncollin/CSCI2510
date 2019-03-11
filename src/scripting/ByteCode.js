@@ -1,8 +1,9 @@
 class Variable {
-	constructor(name, variable, status) {
+	constructor(name, variable, statu, script) {
 		this.name = name;
 		this.variable = variable;
 		this.status = status;
+		this.script = script;
 	}
 
 	getValue() {
@@ -18,7 +19,7 @@ class Variable {
 
 class Function extends Variable {
 	constructor(name, func, status, args=[]) {
-		super(name, func, status);
+		super(name, func, status, null);
 		this.args = args;
 		this.length = func.length;
 	}
@@ -48,11 +49,26 @@ class Function extends Variable {
 	getFunctionVariable() {
 		return this.variable;
 	}
+
+	moveFromTempVariables() {
+		let completedArguments = [].concat(this.args);
+		for(let i = 0; i < completedArguments.length; i++) {
+			let arg = completedArguments[i];
+			if(arg instanceof Variable) {
+				completedArguments[i] = this.script.getVariable(arg.name);
+			}
+			else if(typeof arg.moveFromTempVariables === "function") {
+				completedArguments[i].moveFromTempVariables();
+			}
+		}
+		this.args = completedArguments;
+	}
 }
 
 class ByteCode {
-	constructor(type) {
+	constructor(type, script) {
 		this.type = type;
+		this.script = script;
 	}
 
 	execute() {
@@ -62,11 +78,13 @@ class ByteCode {
 	getValue() {
 		return this.execute();
 	}
+
+	moveFromTempVariables() {}
 }
 
 class ByteCodeOPERATOR extends ByteCode {
-	constructor(type, operand1, operand2) {
-		super(type);
+	constructor(type, operand1, operand2, script) {
+		super(type, script);
 		this.operand1 = operand1;
 		this.operand2 = operand2;
 	}
@@ -113,14 +131,28 @@ class ByteCodeOPERATOR extends ByteCode {
 
 		return result;
 	}
+
+	moveFromTempVariables() {
+		if(this.operand1 instanceof Variable) {
+			this.operand1 = this.script.getVariable(this.operand1.name);
+		}
+		else if(typeof this.operand1.moveFromTempVariables === "function") {
+			this.operand1.moveFromTempVariables();
+		}
+		if(this.operand2 instanceof Variable) {
+			this.operand2 = this.script.getVariable(this.operand2.name);
+		}
+		else if(typeof this.operand2.moveFromTempVariables === "function") {
+			this.operand2.moveFromTempVariables();
+		}
+	}
 }
 
 class ByteCodeMAKE_VAR extends ByteCode {
 	constructor(name, value, script) {
-		super(CodeTypes.MAKE_VAR);
+		super(CodeTypes.MAKE_VAR, script);
 		this.name = name;
 		this.value = value;
-		this.script = script;
 	}
 
 	execute() {
@@ -138,14 +170,22 @@ class ByteCodeMAKE_VAR extends ByteCode {
 
 		return realValue;
 	}
+
+	moveFromTempVariables() {
+		if(this.value instanceof Variable) {
+			this.value = this.script.getVariable(this.value.name);
+		}
+		else if(typeof this.value.moveFromTempVariables === "function") {
+			this.value.moveFromTempVariables();
+		}
+	}
 }
 
 class ByteCodeSET_VAR extends ByteCode {
 	constructor(name, value, script) {
-		super(CodeTypes.MAKE_VAR);
+		super(CodeTypes.MAKE_VAR, script);
 		this.name = name;
 		this.value = value;
-		this.script = script;
 	}
 
 	execute() {
@@ -162,13 +202,21 @@ class ByteCodeSET_VAR extends ByteCode {
 
 		return realValue;
 	}
+
+	moveFromTempVariables() {
+		if(this.value instanceof Variable) {
+			this.value = this.script.getVariable(this.value.name);
+		}
+		else if(typeof this.value.moveFromTempVariables === "function") {
+			this.value.moveFromTempVariables();
+		}
+	}
 }
 
 class ByteCodeGET_VAR extends ByteCode {
 	constructor(name, script) {
-		super(CodeTypes.GET);
+		super(CodeTypes.GET, script);
 		this.name = name;
-		this.script = script;
 	}
 
 	execute() {
@@ -182,8 +230,8 @@ class ByteCodeGET_VAR extends ByteCode {
 
 
 class ByteCodeFunction extends ByteCode {
-	constructor(type, name, args=[], code) {
-		super(type);
+	constructor(type, name, args=[], code, script) {
+		super(type, script);
 		this.name = name;
 		this.args = args;
 		this.length = this.args.length;

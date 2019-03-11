@@ -2,6 +2,14 @@ var gameStateHandler = {
 	start() {
 		updateListeners.push(this);
 
+		this.interpreterTemplate = document.getElementById("interpreterTextarea");
+		this.scriptTemplate = document.getElementById("scriptTextarea");
+		this.openedScript = null;
+
+		this.textareaSection = document.getElementById("textareaSection");
+
+		this.textareaSection.appendChild(this.interpreterTemplate.content.cloneNode(true));
+
 		this.canvas = document.getElementById("gameCanvas");
 		this.width = this.canvas.width;
 		this.height = this.canvas.height;
@@ -17,6 +25,7 @@ var gameStateHandler = {
 		this.statsActive = document.getElementsByClassName("statsActive")[0].id;
 		this.textInput = document.getElementById("textbox");
 		this.interpreterOutput = document.getElementById("textarea");
+		this.scriptOutput = this.scriptTemplate.content.querySelector("#script");
 		this.chatOutput = document.getElementById("chatArea");
 		this.interpreterOutputArr = [];
 		this.functions = [];
@@ -52,7 +61,6 @@ var gameStateHandler = {
 		this.hierachy.push(this.player);
 
 		update({name: "statChange"});
-
 		
 		update({name: "addFunction", key: "move", value: move, status: Status.GAME});
 		update({name: "addFunction", key: "clearVariables", value: clearVariables, status: Status.GAME});
@@ -68,6 +76,10 @@ var gameStateHandler = {
 		update({name: "addFunction", key: "selectEquipment", value: selectEquipment, status: Status.GAME});
 		update({name: "addFunction", key: "selectInventory", value: selectInventory, status: Status.GAME});
 		update({name: "addFunction", key: "unequip", value: unequip, status: Status.GAME});
+		update({name: "addFunction", key: "equip", value: equip, status: Status.GAME});
+		update({name: "addFunction", key: "openScript", value: openScript, status: Status.GAME});
+		update({name: "addFunction", key: "closeScript", value: closeScript, status: Status.GAME});
+		update({name: "addFunction", key: "executeScript", value: executeScript, status: Status.GAME});
 
 
 		this.interpreterVariables = []; // Doesn't do anything but fix script to keep variables alive
@@ -80,12 +92,14 @@ var gameStateHandler = {
 					for(let i = 0; i < errors.length; i++) {
 						interpreterCallback(errors[i]);
 					}
-					gameStateHandler.history.splice(1, 0, this.value);
-					if(gameStateHandler.history.length > gameStateHandler.MAX_HISTORY) {
-						gameStateHandler.history.pop();
+					if(this.value != "") {
+						gameStateHandler.history.splice(1, 0, this.value);
+						if(gameStateHandler.history.length > gameStateHandler.MAX_HISTORY) {
+							gameStateHandler.history.pop();
+						}
+						gameStateHandler.currentHistoryIndex = 0;
+						this.value = "";
 					}
-					gameStateHandler.currentHistoryIndex = 0;
-					this.value = "";
 				}
 			}
 		};
@@ -107,6 +121,8 @@ var gameStateHandler = {
 		}
 
 		this.player.equipmentPut(bodyItems.rugged_shirt, "body");
+
+		this.player.addScript(new Script("script 1", "", Status.PLAYER, null, null, scriptCallback));
 	},
 	eventPump(event) {
 		switch(event.name) {
@@ -129,6 +145,14 @@ var gameStateHandler = {
 			case "addVariable":
 				this.variables.push(new Variable(event.key, event.value, event.status));
 				break;
+			case "interpreterOutput":
+				if(event.output != null) {
+					this.interpreterOutputArr.push(event.output)
+				}
+				if(this.interpreterOutputArr.length > this.MAX_INTERPRETER_OUTPUT) {
+					this.interpreterOutputArr.shift();
+				}
+				this.interpreterOutput.value = this.interpreterOutputArr.join("\n");
 		}
 	},
 	update() {
@@ -162,6 +186,9 @@ var gameStateHandler = {
 		}
 		else if(this.statsActive === "equipment") {
 			this.renderEquipmentPage();
+		}
+		else if(this.statsActive === "scripts") {
+			this.renderScriptsPage();
 		}
 	},
 	renderInventoryPage() {
@@ -244,6 +271,19 @@ var gameStateHandler = {
 
 		this.statsCtx.drawImage(images.misc.select, this.equipmentImagesLocations[EQUIPMENT_TYPES[this.player.selectedEquipment]][0] - offset * .5, this.equipmentImagesLocations[EQUIPMENT_TYPES[this.player.selectedEquipment]][1] - offset * .5, imageSize + offset * 2, imageSize + offset * 2);
 	},
+	renderScriptsPage() {
+		for(let i = 0; i < this.player.scripts.length; i++) {
+			let scriptName = this.player.scripts[i].name;
+			this.statsCtx.fillStyle = "white";
+			this.statsCtx.font = "15px Georgia";
+			let xPosition = this.statWidth / 10;
+			let yPosition = (this.statHeight / 10) * (i+1);
+
+			this.statsCtx.fillRect(xPosition, yPosition, this.statWidth/2, this.statHeight / 25);
+			this.statsCtx.fillStyle = "black";
+			this.statsCtx.fillText(scriptName, xPosition + 3, yPosition + 15);
+		}
+	},
 	renderMinimap() {
 		this.miniCtx.fillStyle = "rgb(18, 158, 23)";
 		this.miniCtx.fillRect(0, 0, this.miniWidth, this.miniHeight);
@@ -312,7 +352,7 @@ var gameStateHandler = {
 	}
 };
 
-function interpreterCallback(byteCode, funcValue) {
+function interpreterCallback(byteCode, funcValue, preExtra="", postExtra="") {
 	let output = null;
 	if(byteCode instanceof Error) {
 		output = "Error: " + byteCode.message;
@@ -350,12 +390,25 @@ function interpreterCallback(byteCode, funcValue) {
 		}
 	}
 
-	if(output != null) {
-		gameStateHandler.interpreterOutputArr.push(output)
-		if(gameStateHandler.interpreterOutputArr.length > gameStateHandler.MAX_INTERPRETER_OUTPUT) {
-			gameStateHandler.interpreterOutputArr.shift();
-		}
+	if(output === null) {
+		update({name: "interpreterOutput", output: null});
+	}
+	else {
+		update({name: "interpreterOutput", output: preExtra + output + postExtra});
+	}
+}
+
+// Used to output errors to the interpreter window
+function scriptCallback(byteCode, value, preExtra, postExtra) {
+	let output = null;
+	if(byteCode instanceof Error) {
+		output = "Error: " + byteCode.message;
 	}
 
-	gameStateHandler.interpreterOutput.value = gameStateHandler.interpreterOutputArr.join("\n");
+	if(output === null) {
+		update({name: "interpreterOutput", output: null});
+	}
+	else {
+		update({name: "interpreterOutput", output: preExtra + output + postExtra});
+	}
 }

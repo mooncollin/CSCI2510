@@ -110,5 +110,27 @@ class Player extends Entity {
 		}
 
 		return this.inventory.items[index] === null;
-	}	
+	}
+
+	addScript(script) {
+		if(script === null
+			|| !(script instanceof Script)) {
+			return false;
+		}
+
+		this.scripts.push(script);
+		update({name: "statChange"});
+		return true;
+	}
+
+	getScript(name) {
+		for(let i = 0; i < this.scripts.length; i++) {
+			let script = this.scripts[i];
+			if(script.name === name) {
+				return script;
+			}
+		}
+		
+		return null;
+	}
 }
