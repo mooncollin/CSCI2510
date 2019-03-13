@@ -63,6 +63,10 @@ class Function extends Variable {
 		}
 		this.args = completedArguments;
 	}
+
+	getCode() {
+		return this.variable;
+	}
 }
 
 class ByteCode {
@@ -230,8 +234,8 @@ class ByteCodeGET_VAR extends ByteCode {
 
 
 class ByteCodeFunction extends ByteCode {
-	constructor(type, name, args=[], code, script) {
-		super(type, script);
+	constructor(name, args=[], code, script) {
+		super(CodeTypes.CALL, script);
 		this.name = name;
 		this.args = args;
 		this.length = this.args.length;
@@ -239,8 +243,19 @@ class ByteCodeFunction extends ByteCode {
 	}
 
 	execute() {
-		for(let i = 0; i < code.length; i++) {
-			code[i].execute();
+		let completedArguments = [].concat(this.args);
+		for(let i = 0; i < completedArguments.length; i++) {
+			if(typeof completedArguments[i].getValue === "function") {
+				completedArguments[i] = completedArguments[i].getValue();
+			}
+		}
+		if(typeof this.code === "function") {
+			return this.code(...completedArguments);
+		}
+		else {
+			for(let i = 0; i < code.length; i++) {
+				code[i].execute();
+			}
 		}
 	}
 
@@ -250,6 +265,24 @@ class ByteCodeFunction extends ByteCode {
 		}
 
 		return this.name === other.name && this.length === other.length;
+	}
+
+	getValue() {
+		return this.execute();
+	}
+
+	moveFromTempVariables() {
+		let completedArguments = [].concat(this.args);
+		for(let i = 0; i < completedArguments.length; i++) {
+			let arg = completedArguments[i];
+			if(arg instanceof Variable) {
+				completedArguments[i] = this.script.getVariable(arg.name);
+			}
+			else if(typeof arg.moveFromTempVariables === "function") {
+				completedArguments[i].moveFromTempVariables();
+			}
+		}
+		this.args = completedArguments;
 	}
 }
 

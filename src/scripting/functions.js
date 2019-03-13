@@ -229,5 +229,5 @@ function executeScript(name) {
 		scriptCallback(errors[i], null, "\t", " - line " + errors[i].lineNum);
 	}
 
-	return true;
+	return errors.length === 0;
 }

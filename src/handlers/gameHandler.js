@@ -83,7 +83,7 @@ var gameStateHandler = {
 
 
 		this.interpreterVariables = []; // Doesn't do anything but fix script to keep variables alive
-		this.interpreterScript = new Script("interpreter", "", Status.INTERPRETER, this.interpreterVariables, null, interpreterCallback);
+		this.interpreterScript = new Script("interpreter", "", Status.INTERPRETER, this.interpreterVariables, null, interpreterCallback, this.player);
 		this.textInput.onkeypress = function(event) {
 			if(event.key === "Enter") {
 				if(!gameStateHandler.interpreterScript.running) {

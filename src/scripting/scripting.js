@@ -108,7 +108,7 @@ function precidence(operator1, operator2) {
 }
 
 class Script {
-	constructor(name, code, status, externalVariables=null, externalFunctions=null, callback=null) {
+	constructor(name, code, status, externalVariables=null, externalFunctions=null, callback=null, executingEntity) {
 		this.name = name;
 		this.status = status;
 		this.running = false;
@@ -121,6 +121,7 @@ class Script {
 			this.externalFunctions = true;
 		}
 		this.callback = callback;
+		this.entity = executingEntity;
 		this.setCode(code);
 	}
 
@@ -243,7 +244,7 @@ class Script {
 			return new Error(ErrorNames.INCORRECT_ARGS, foundFunction.name + " requires at least " + foundFunction.length + " argument" + plural + ", got " + args.length + ".", this._currentLine, this.name);
 		}
 
-		foundFunction.args = args;
+		foundFunction = new ByteCodeFunction(foundFunction.name, args, foundFunction.getCode(), this);
 		return foundFunction;
 	}
 
@@ -396,7 +397,7 @@ class Script {
 	}
 
 	execute() {
-		this._currentLine = 1;
+		this._currentLine = 0;
 		this.running = true;
 		if(this.errors.length > 0) {
 			this.running = false;
@@ -412,34 +413,47 @@ class Script {
 		for(let i = 0; i < this.functions.length; i++) {
 			this.functions[i].script = this;
 		}
-		
-		for(let i = 0; i < this.byteCode.length; i++) {
-			
+
+		setTimeout((function() {
+			this.executeLine(0);
+		}).bind(this), this.entity.executionSpeed);
+		return [];
+	}
+
+	executeLine(lineNum) {
+		if(lineNum < this.byteCode.length) {
+			this._currentLine++;
+			if(typeof this.byteCode[lineNum].moveFromTempVariables === "function") {
+				this.byteCode[lineNum].script = this;
+				this.byteCode[lineNum].moveFromTempVariables();
+			}
 			try {
-				if(typeof this.byteCode[i].moveFromTempVariables === "function") {
-					this.byteCode[i].script = this;
-					this.byteCode[i].moveFromTempVariables();
-				}
-				let value = this.byteCode[i].execute();
+				let value = this.byteCode[lineNum].execute();
 				if(this.callback)
 				{
-					this.callback(this.byteCode[i], value);
+					this.callback(this.byteCode[lineNum], value);
 				}
+				setTimeout((function() {
+					this.executeLine(lineNum + 1);
+				}).bind(this), this.entity.executionSpeed);
 			}
 			catch(error) {
 				if(error instanceof InternalError) {
 					this.errors.push(new Error(ErrorNames.STACK_OVERFLOW, "Too much recursion", this._currentLine, this.name));
 					this.running = false;
-					return this.errors;
+					if(this.callback)
+					{
+						this.callback(error, null);
+					}
 				}
 				else {
 					console.log(error);
 				}
 			}
-			this._currentLine++;
 		}
-		this.running = false;
-		return [];
+		else {
+			this.running = false;
+		}
 	}
 
 	parseFunctionCall(funcStr) {

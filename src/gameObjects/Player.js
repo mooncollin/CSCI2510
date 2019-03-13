@@ -15,6 +15,7 @@ class Player extends Entity {
 		this.health = 100;
 		this.speed = .1;
 		this.MAX_INVENTORY = 20;
+		this.executionSpeed = 1000;
 		this.scripts = [];
 
 		for(let i = 0; i < this.MAX_INVENTORY; i++) {
@@ -117,6 +118,8 @@ class Player extends Entity {
 			|| !(script instanceof Script)) {
 			return false;
 		}
+
+		script.entity = this;
 
 		this.scripts.push(script);
 		update({name: "statChange"});

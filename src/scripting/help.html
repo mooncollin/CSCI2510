@@ -220,6 +220,19 @@
 		</p>
 	</template>
 
+	<template id="executeScript">
+		<p class="name">executeScript</p>
+		<p class="param">param 'name': The name of the script to execute</p>
+		<p class="return">return: true if the script executed without errors, false otherwise or if 
+			the script does not exist
+		</p>
+		<p class="description">
+			Executes the given script. All variables made will be alive only during that script execution 
+			and will not interfere with any other scripts's variables. Will display compile-time and run-time errors 
+			in the interpreter window.
+		</p>
+	</template>
+
 	<div id="placeholderTemplate">
 
 	</div>
@@ -247,7 +260,8 @@
 			"unequip",
 			"equip",
 			"openScript",
-			"closeScript"
+			"closeScript",
+			"executeScript"
 		];
 		
 		let names = getUrlVars();

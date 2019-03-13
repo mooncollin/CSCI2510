@@ -23,5 +23,3 @@ function updateView() {
 	templateHere.innerHTML = "";
 	templateHere.appendChild(clone);
 }
-
-var titleTemplate;
