@@ -120,7 +120,7 @@ var gameStateHandler = {
 			}
 		}
 
-		this.player.equipmentPut(bodyItems.rugged_shirt, "body");
+		this.player.equipmentPut(new RuggedShirt());
 
 		this.player.addScript(new Script("script 1", "", Status.PLAYER, null, null, scriptCallback));
 	},
@@ -363,9 +363,15 @@ function interpreterCallback(byteCode, funcValue, preExtra="", postExtra="") {
 		if(typeof value === "string") {
 			output += "\"";
 		}
+		else if(value instanceof Array) {
+			output += "[";
+		}
 		output += value;
 		if(typeof value === "string") {
 			output += "\"";
+		}
+		else if(value instanceof Array) {
+			output += "]";
 		}
 	}
 	else if(byteCode instanceof ByteCodeSET_VAR || byteCode instanceof ByteCodeGET_VAR) {
@@ -374,19 +380,31 @@ function interpreterCallback(byteCode, funcValue, preExtra="", postExtra="") {
 		if(typeof value === "string") {
 			output += "\"";
 		}
+		else if(value instanceof Array) {
+			output += "[";
+		}
 		output += value;
 		if(typeof value === "string") {
 			output += "\"";
 		}
+		else if(value instanceof Array) {
+			output += "]";
+		}
 	}
-	else if(byteCode instanceof Function) {
+	else if(byteCode instanceof ByteCodeFunction) {
 		output = byteCode.name + "() -> ";
 		if(typeof funcValue === "string") {
 			output += "\"";
 		}
+		else if(funcValue instanceof Array) {
+			output += "[";
+		}
 		output += funcValue;
 		if(typeof funcValue === "string") {
 			output += "\"";
+		}
+		else if(funcValue instanceof Array) {
+			output += "]";
 		}
 	}
 

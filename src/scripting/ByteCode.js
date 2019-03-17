@@ -54,7 +54,7 @@ class Function extends Variable {
 		let completedArguments = [].concat(this.args);
 		for(let i = 0; i < completedArguments.length; i++) {
 			let arg = completedArguments[i];
-			if(arg instanceof Variable) {
+			if(arg instanceof Variable && !(arg instanceof Function)) {
 				completedArguments[i] = this.script.getVariable(arg.name);
 			}
 			else if(typeof arg.moveFromTempVariables === "function") {
@@ -137,13 +137,13 @@ class ByteCodeOPERATOR extends ByteCode {
 	}
 
 	moveFromTempVariables() {
-		if(this.operand1 instanceof Variable) {
+		if(this.operand1 instanceof Variable && !(this.operand1 instanceof Function)) {
 			this.operand1 = this.script.getVariable(this.operand1.name);
 		}
 		else if(typeof this.operand1.moveFromTempVariables === "function") {
 			this.operand1.moveFromTempVariables();
 		}
-		if(this.operand2 instanceof Variable) {
+		if(this.operand2 instanceof Variable && !(this.operand2 instanceof Function)) {
 			this.operand2 = this.script.getVariable(this.operand2.name);
 		}
 		else if(typeof this.operand2.moveFromTempVariables === "function") {
@@ -176,7 +176,7 @@ class ByteCodeMAKE_VAR extends ByteCode {
 	}
 
 	moveFromTempVariables() {
-		if(this.value instanceof Variable) {
+		if(this.value instanceof Variable && !(this.value instanceof Function)) {
 			this.value = this.script.getVariable(this.value.name);
 		}
 		else if(typeof this.value.moveFromTempVariables === "function") {
@@ -208,7 +208,7 @@ class ByteCodeSET_VAR extends ByteCode {
 	}
 
 	moveFromTempVariables() {
-		if(this.value instanceof Variable) {
+		if(this.value instanceof Variable && !(this.value instanceof Function)) {
 			this.value = this.script.getVariable(this.value.name);
 		}
 		else if(typeof this.value.moveFromTempVariables === "function") {
@@ -275,7 +275,7 @@ class ByteCodeFunction extends ByteCode {
 		let completedArguments = [].concat(this.args);
 		for(let i = 0; i < completedArguments.length; i++) {
 			let arg = completedArguments[i];
-			if(arg instanceof Variable) {
+			if(arg instanceof Variable && !(arg instanceof Function)) {
 				completedArguments[i] = this.script.getVariable(arg.name);
 			}
 			else if(typeof arg.moveFromTempVariables === "function") {
@@ -286,12 +286,71 @@ class ByteCodeFunction extends ByteCode {
 	}
 }
 
+class ByteCodeIF extends ByteCode {
+	constructor(condition, code, script) {
+		super(CodeTypes.IF, script);
+		this.condition = condition;
+		this.code = code;
+	}
+
+	execute() {
+		let value = this.condition;
+		if(typeof value.getValue === "function") {
+			value = value.getValue();
+		}
+
+		if(value) {
+			setTimeout((function(){
+				this.executeLine(0);
+			}).bind(this), this.script.entity.executionSpeed);
+		}
+	}
+
+	executeLine(lineNum) {
+		if(lineNum < this.code.length) {
+			this.script._currentLine++;
+			if(typeof this.code[lineNum].moveFromTempVariables === "function") {
+				this.code[lineNum].script = this.script;
+				this.code[lineNum].moveFromTempVariables();
+			}
+			let value = this.code[lineNum].execute();
+			if(this.script.callback) {
+				this.script.callback(this.code[lineNum], value);
+			}
+			setTimeout((function() {
+				this.executeLine(lineNum + 1);
+			}).bind(this), this.script.entity.executionSpeed);
+		}
+	}
+
+	getValue() {
+		return this.execute();
+	}
+
+	moveFromTempVariables() {
+		if(this.condition instanceof Variable && !(this.condition instanceof Function)) {
+			this.condition = this.script.getVariable(this.condition.name);
+		}
+		else if(typeof this.condition.moveFromTempVariables === "function") {
+			this.condition.moveFromTempVariables();
+		}
+	}
+}
+
+class ByteCodeENDIF extends ByteCode {
+	constructor(script) {
+		super(CodeTypes.ENDIF, script);
+	}
+}
+
 var CodeTypes = {
 	GET: "get",
 	CALL: "call",
 	MAKE_VAR: "var",
 	MAKE_FUNCTION: "function",
-	SET: "set"
+	SET: "set",
+	IF: "if",
+	ENDIF: "endif"
 };
 
 var OperatorTypes = {

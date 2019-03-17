@@ -174,7 +174,7 @@ function equip() {
 		return false;
 	}
 
-	let result = gameStateHandler.player.equipmentPut(item, item.slot)
+	let result = gameStateHandler.player.equipmentPut(item);
 	update({name: "statChange"});
 	return result;
 }

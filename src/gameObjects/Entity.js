@@ -99,17 +99,18 @@ class Entity extends GameObject {
 		return item instanceof Equipment && this.equipment[item.slot].name === "Nothing";
 	}
 
-	equipmentPut(item, slot) {
-		if(this.equipment[slot] === undefined
-			|| (this.equipment[slot] != null && this.equipment[slot].name != "Nothing"))
+	equipmentPut(item) {
+		if(item === null
+			|| this.equipment[item.slot] === undefined
+			|| (this.equipment[item.slot] != null && this.equipment[item.slot].name != "Nothing"))
 		{
 			return false;
 		}
 
-		this.equipment[slot] = item;
-		this.equipment[slot].components = this.nothingEquipmentSlot(slot);
-		for(let i = 0; i < this.equipment[slot].components.length; i++) {
-			this.equipment[slot].components[i].color = item.attributes.color;
+		this.equipment[item.slot] = item;
+		this.equipment[item.slot].components = this.nothingEquipmentSlot(item.slot);
+		for(let i = 0; i < this.equipment[item.slot].components.length; i++) {
+			this.equipment[item.slot].components[i].color = item.attributes.color;
 		}
 		this.refreshEquipment();
 		return true;

@@ -20,6 +20,16 @@ function parseLine(code) {
 		return {results: results, kind: CodeTypes.CALL};
 	}
 
+	results = ifStatement.exec(code);
+	if(results) {
+		return {results: results, kind: CodeTypes.IF};
+	}
+
+	results = endIfStatement.exec(code);
+	if(results) {
+		return {results: results, kind: CodeTypes.ENDIF};
+	}
+
 	return null;
 }
 
@@ -51,8 +61,15 @@ function isReservedWord(word) {
 	return false;
 }
 
-function parseFunctionArgs(functionSig) {
-	let functionArgs = functionSig.slice(functionSig.indexOf("(")+1, functionSig.lastIndexOf(")"));
+function parseFunctionArgs(functionSig, type) {
+	let functionArgs = [];
+	if(type === "function") {
+		functionArgs = functionSig.slice(functionSig.indexOf("(")+1, functionSig.lastIndexOf(")"));
+	}
+	else if(type === "array") {
+		functionArgs = functionSig.slice(functionSig.indexOf("[")+1, functionSig.lastIndexOf("]"));
+	}
+	
 	let args = [];
 	let string = null;
 	let start = 0;
@@ -147,22 +164,9 @@ class Script {
 		let results = parseCode(code, this.name);
 		for(let i = 0; i < results.length; i++) {
 			this._currentLine++;
-			let result = results[i];
-			if(results[i].kind === CodeTypes.MAKE_VAR) {
-				result = this.parseVar(results[i].results);
-			}
-			else if(results[i].kind === CodeTypes.MAKE_FUNCTION) {
-				result = this.parseFunction(results[i].results);
-			}
-			else if(results[i].kind === CodeTypes.GET) {
-				result = this.parseGet(results[i].results);
-			}
-			else if(results[i].kind === CodeTypes.SET) {
-				result = this.parseSet(results[i].results);
-			}
-			else if(results[i].kind === CodeTypes.CALL) {
-				result = this.parseCall(results[i].results);
-			}
+			let result = this.parseByteCode(results, i);
+			i = result[1];
+			result = result[0];
 
 			if(result instanceof Error)  {
 				this.errors.push(result);
@@ -173,12 +177,45 @@ class Script {
 		}
 	}
 
+	parseByteCode(results, i) {
+		let result = results[i];
+		if(results[i].kind === CodeTypes.MAKE_VAR) {
+			result = this.parseVar(results[i].results);
+		}
+		else if(results[i].kind === CodeTypes.MAKE_FUNCTION) {
+			result = this.parseFunction(results[i].results);
+		}
+		else if(results[i].kind === CodeTypes.GET) {
+			result = this.parseGet(results[i].results);
+		}
+		else if(results[i].kind === CodeTypes.SET) {
+			result = this.parseSet(results[i].results);
+		}
+		else if(results[i].kind === CodeTypes.CALL) {
+			result = this.parseCall(results[i].results);
+		}
+		else if(results[i].kind === CodeTypes.IF) {
+			result = this.parseIf(results[i].results, results, i+1);
+			if(!(result instanceof Error)) {
+				i += result.code.length + 1;
+			}
+		}
+		else if(results[i].kind === CodeTypes.ENDIF) {
+			result = new ByteCodeENDIF(this);
+		}
+
+		return [result, i];
+	}
+
 	parseVar(arr) {
 		let name = arr[2];
 		let functionResults = this.parseFunctionCall(arr[3]);
-		if(functionResults instanceof Error)
-		{
+		let arrayResults = this.parseArray(arr[3]);
+		if(functionResults instanceof Error) {
 			return functionResults;
+		}
+		if(arrayResults instanceof Error) {
+			return arrayResults;
 		}
 		else if(this.getVariable(name) || this.getTempVariable(name)) {
 			return new Error(ErrorNames.DUP_VAR, "Variable '" + name + "' already exists.", this._currentLine, this.name);
@@ -187,7 +224,13 @@ class Script {
 				|| this.getTempVariable(name) != null && this.getTempVariable(name).status === Status.GAME) {
 			return new Error(ErrorNames.RESTRICTED, "Variable '" + name + "' is read-only.", this._currentLine, this.name);
 		}
-		let value = functionResults != null ? functionResults : this.parseValues(arr[3]);
+		let value = functionResults;
+		if(value === null) {
+			value = arrayResults;
+		}
+		if(value === null) {
+			value = this.parseValues(arr[3]);
+		}
 		if(value instanceof Error) {
 			return value;
 		}
@@ -211,6 +254,7 @@ class Script {
 	parseSet(arr) {
 		let name = arr[1];
 		let functionResults = this.parseFunctionCall(arr[2]);
+		let arrayResults = this.parseArray(arr[2]);
 		if(functionResults === null && this.getVariable(name) === null && this.getTempVariable(name) === null) {
 			return new Error(ErrorNames.UNKNOWN_SYMBOL, "Cannot find symbol: " + name + ".", this._currentLine, this.name);
 		}
@@ -218,7 +262,13 @@ class Script {
 				|| (this.getTempVariable(name) && this.getTempVariable(name).status === Status.GAME)) {
 			return new Error(ErrorNames.RESTRICTED, "Variable '" + name + "' is read-only.", this._currentLine, this.name);
 		}
-		let value = functionResults != null ? functionResults : this.parseValues(arr[2]);
+		let value = functionResults;
+		if(value === null) {
+			value = arrayResults;
+		}
+		if(value === null) {
+			value = this.parseValues(arr[2]);
+		}
 		if(value instanceof Error) {
 			return value;
 		}
@@ -228,7 +278,7 @@ class Script {
 
 	parseCall(arr) {
 		let name = arr[1];
-		let args = parseFunctionArgs(arr[0]);
+		let args = parseFunctionArgs(arr[0], "function");
 		for(let i = 0; i < args.length; i++) {
 			args[i] = this.parseValues(args[i].trim());
 			if(args[i] instanceof Error) {
@@ -246,6 +296,56 @@ class Script {
 
 		foundFunction = new ByteCodeFunction(foundFunction.name, args, foundFunction.getCode(), this);
 		return foundFunction;
+	}
+
+	parseIf(arr, results, position) {
+		let functionResults = this.parseFunctionCall(arr[1]);
+		let condition = functionResults;
+		if(condition === null) {
+			condition = this.parseValues(arr[1]);
+		}
+		if(condition instanceof Error) {
+			return condition;
+		}
+
+		let inIf = false;
+		let foundEnd = false;
+		let code = [];
+		while(!foundEnd && position < results.length) {
+			this._currentLine++;
+			let compiledCode = this.parseByteCode(results, position);
+			position = compiledCode[1];
+			compiledCode = compiledCode[0];
+
+			if(compiledCode instanceof Error) {
+				this.errors.push(compiledCode);
+			}
+			else {
+				if(compiledCode instanceof ByteCodeIF) {
+					inIf = true;
+					position--;
+				}
+				else if(compiledCode instanceof ByteCodeENDIF) {
+					if(inIf) {
+						inIf = false;
+					}
+					else {
+						foundEnd = true;
+					}
+					
+				}
+				if(!foundEnd) {
+					code.push(compiledCode);
+				}
+			}
+			position++;
+		}
+
+		if(!foundEnd) {
+			return new Error(ErrorNames.NOENDIF, "Missing endif", this._currentLine, this.name);
+		}
+
+		return new ByteCodeIF(condition, code, this);
 	}
 
 	parseValues(values) {
@@ -305,6 +405,8 @@ class Script {
 	parseValue(val) {
 		let result = null;
 		let strRegResults = stringRegEx.exec(val);
+
+		// String
 		if(strRegResults != null) {
 			result = strRegResults[0];
 			result = result.slice(1, result.length - 1);
@@ -316,6 +418,7 @@ class Script {
 			}
 		}
 
+		// Number
 		if(result === null) {
 			result = Number(val)
 			if(isNaN(result)) {
@@ -323,6 +426,7 @@ class Script {
 			}
 		}
 
+		// Variable or Function
 		if(result === null) {
 			var variable = this.getTempVariable(val);
 			var variable2 = this.getVariable(val);
@@ -340,7 +444,7 @@ class Script {
 					result = func;
 				}
 				else if(func2) {
-					let args = parseFunctionArgs(val);
+					let args = parseFunctionArgs(val, "function");
 					for(let i = 0; i < args.length; i++) {
 						args[i] = this.parseValues(args[i]);
 					}
@@ -350,6 +454,7 @@ class Script {
 			}
 		}
 
+		// True or False
 		if(result === null) {
 			if(val === "true") {
 				result = true;
@@ -440,7 +545,6 @@ class Script {
 			catch(error) {
 				if(error instanceof InternalError) {
 					this.errors.push(new Error(ErrorNames.STACK_OVERFLOW, "Too much recursion", this._currentLine, this.name));
-					this.running = false;
 					if(this.callback)
 					{
 						this.callback(error, null);
@@ -449,6 +553,7 @@ class Script {
 				else {
 					console.log(error);
 				}
+				this.running = false;
 			}
 		}
 		else {
@@ -470,6 +575,22 @@ class Script {
 		}
 
 		return results;
+	}
+
+	parseArray(str) {
+		if(str.indexOf('[') === -1 && str.indexOf(']') === -1) {
+			return null;
+		}
+		let values = parseFunctionArgs(str, "array");
+		for(let i = 0; i < values.length; i++) {
+			let value = this.parseValues(values[i]);
+			if(value instanceof Error) {
+				return value;
+			}
+			values[i] = value;
+		}
+
+		return values;
 	}
 }
 
@@ -495,7 +616,8 @@ var ErrorNames = {
 	INCORRECT_ARGS: "Incorrect number of arguments",
 	INVALID_SYNTAX: "Invalid Syntax",
 	RESTRICTED: "Access Restricted",
-	STACK_OVERFLOW: "Stack Overflow"
+	STACK_OVERFLOW: "Stack Overflow",
+	NOENDIF: "Missing endif"
 };
 
 
@@ -505,6 +627,8 @@ var existingVarSet = /^([a-zA-Z_][a-zA-Z0-9_]*)\s*=\s*(.*?);$/;
 var existingVarGet = /^([a-zA-Z_][a-zA-Z0-9_]*);$/;
 var functionCall = /^([a-zA-Z_][a-zA-Z0-9_]*)\((.*?)\);$/;
 var stringRegEx = /(?:^'(?:[^']|(?:\\'))*'$)|(?:^"(?:[^"]|(?:\\"))*"$)/;
+var ifStatement = /^if\s*(.+)/;
+var endIfStatement = /^endif$/;
 var valueSeparators = /[-+\/%*|&<>]/;
 
 var escapeCharactersReg = [

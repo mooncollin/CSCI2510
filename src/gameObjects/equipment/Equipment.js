@@ -47,11 +47,3 @@ var EQUIPMENT_ATTRIBUTES = [
 	"color",
 	"type"
 ];
-
-var bodyItems = {
-	"rugged_shirt" : new Equipment("Rugged Shirt", "Grimy old shirt", 0, "body", null, {
-							"defense"	: 1,
-							"color"		: "brown",
-							"type"		: "cloth"
-						})
-};

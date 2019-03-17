@@ -42,12 +42,10 @@ var loadStateHandler = {
 		}
 
 		// BODY ITEMS
-		let bodyKeys = Object.keys(bodyItems);
-		for(let i = 0; i < bodyKeys.length; i++) {
-			images.equipment[bodyKeys[i]] = new Image();
-			images.equipment[bodyKeys[i]].onload = loadImage;
-			images.equipment[bodyKeys[i]].src = 'images/equipment/' + bodyKeys[i] + '.png';
-			bodyItems[bodyKeys[i]].image = images.equipment[bodyKeys[i]];
+		for(let i = 0; i < bodyItems.length; i++) {
+			images.equipment[bodyItems[i]] = new Image();
+			images.equipment[bodyItems[i]].onload = loadImage;
+			images.equipment[bodyItems[i]].src = 'images/equipment/' + bodyItems[i] + '.png';
 		}
 
 		images.misc = {};
@@ -62,13 +60,11 @@ var loadStateHandler = {
 
 		for(let i = 0; i < ke.length; i++) {
 			let subKeys = Object.keys(images[ke[i]]);
-			for(let h = 0; h < subKeys.length; h++) {
-				totalImages++;
-			}
+			totalImages += subKeys.length;
 		}
 
 		var imageLoadingInterval = setInterval(function() {
-			if(totalImages <= loadedImages) {
+			if(totalImages === loadedImages) {
 				clearInterval(imageLoadingInterval);
 				update({name: "next"});
 			}

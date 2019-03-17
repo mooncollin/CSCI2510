@@ -1,0 +1,123 @@
+clearChat();
+var index = 0;
+var inventoryIndex = 0;
+selectEquipment(index);
+var result = unequip();
+
+if equals(result, true)
+	printf("Unequipped {}\n", selectedInventory());
+	inventoryIndex = inventoryIndex + 1;
+	selectInventory(inventoryIndex);
+endif
+
+index = index + 1;
+selectEquipment(index);
+result = unequip();
+
+if equals(result, true)
+	printf("Unequipped {}\n", selectedInventory());
+	inventoryIndex = inventoryIndex + 1;
+	selectInventory(inventoryIndex);
+endif
+
+index = index + 1;
+selectEquipment(index);
+result = unequip();
+
+if equals(result, true)
+	printf("Unequipped {}\n", selectedInventory());
+	inventoryIndex = inventoryIndex + 1;
+	selectInventory(inventoryIndex);
+endif
+
+index = index + 1;
+selectEquipment(index);
+result = unequip();
+
+if equals(result, true)
+	printf("Unequipped {}\n", selectedInventory());
+	inventoryIndex = inventoryIndex + 1;
+	selectInventory(inventoryIndex);
+endif
+
+index = index + 1;
+selectEquipment(index);
+result = unequip();
+
+if equals(result, true)
+	printf("Unequipped {}\n", selectedInventory());
+	inventoryIndex = inventoryIndex + 1;
+	selectInventory(inventoryIndex);
+endif
+
+index = index + 1;
+selectEquipment(index);
+result = unequip();
+
+if equals(result, true)
+	printf("Unequipped {}\n", selectedInventory());
+	inventoryIndex = inventoryIndex + 1;
+	selectInventory(inventoryIndex);
+endif
+
+index = index + 1;
+selectEquipment(index);
+result = unequip();
+
+if equals(result, true)
+	printf("Unequipped {}\n", selectedInventory());
+	inventoryIndex = inventoryIndex + 1;
+	selectInventory(inventoryIndex);
+endif
+
+index = index + 1;
+selectEquipment(index);
+result = unequip();
+
+if equals(result, true)
+	printf("Unequipped {}\n", selectedInventory());
+	inventoryIndex = inventoryIndex + 1;
+	selectInventory(inventoryIndex);
+endif
+
+index = index + 1;
+selectEquipment(index);
+result = unequip();
+
+if equals(result, true)
+	printf("Unequipped {}\n", selectedInventory());
+	inventoryIndex = inventoryIndex + 1;
+	selectInventory(inventoryIndex);
+endif
+
+index = index + 1;
+selectEquipment(index);
+result = unequip();
+
+if equals(result, true)
+	printf("Unequipped {}\n", selectedInventory());
+	inventoryIndex = inventoryIndex + 1;
+	selectInventory(inventoryIndex);
+endif
+
+index = index + 1;
+selectEquipment(index);
+result = unequip();
+
+if equals(result, true)
+	printf("Unequipped {}\n", selectedInventory());
+	inventoryIndex = inventoryIndex + 1;
+	selectInventory(inventoryIndex);
+endif
+
+index = index + 1;
+selectEquipment(index);
+result = unequip();
+
+if equals(result, true)
+	printf("Unequipped {}\n", selectedInventory());
+	inventoryIndex = inventoryIndex + 1;
+	selectInventory(inventoryIndex);
+endif
+
+println("Done");
