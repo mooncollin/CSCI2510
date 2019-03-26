@@ -287,10 +287,12 @@ class ByteCodeFunction extends ByteCode {
 }
 
 class ByteCodeIF extends ByteCode {
-	constructor(condition, code, script) {
+	constructor(condition, code, script, startLine, endLine) {
 		super(CodeTypes.IF, script);
 		this.condition = condition;
 		this.code = code;
+		this.startLine = startLine;
+		this.endLine = endLine;
 	}
 
 	execute() {
@@ -300,15 +302,16 @@ class ByteCodeIF extends ByteCode {
 		}
 
 		if(value) {
-			setTimeout((function(){
-				this.executeLine(0);
-			}).bind(this), this.script.entity.executionSpeed);
+			executeNext(this.code, -1, this);
+		}
+		else {
+			this.script._currentLine = this.endLine;
 		}
 	}
 
 	executeLine(lineNum) {
 		if(lineNum < this.code.length) {
-			this.script._currentLine++;
+			
 			if(typeof this.code[lineNum].moveFromTempVariables === "function") {
 				this.code[lineNum].script = this.script;
 				this.code[lineNum].moveFromTempVariables();
@@ -317,9 +320,11 @@ class ByteCodeIF extends ByteCode {
 			if(this.script.callback) {
 				this.script.callback(this.code[lineNum], value);
 			}
-			setTimeout((function() {
-				this.executeLine(lineNum + 1);
-			}).bind(this), this.script.entity.executionSpeed);
+			this.script._currentLine++;
+			executeNext(this.code, lineNum, this);
+		}
+		else {
+			this.script._currentLine++;
 		}
 	}
 
@@ -335,11 +340,93 @@ class ByteCodeIF extends ByteCode {
 			this.condition.moveFromTempVariables();
 		}
 	}
+
+	getCurrentLine() {
+		return this.script._currentLine;
+	}
+
+	getEntity() {
+		return this.script.entity;
+	}
 }
 
 class ByteCodeENDIF extends ByteCode {
 	constructor(script) {
 		super(CodeTypes.ENDIF, script);
+	}
+}
+
+class ByteCodeWHILE extends ByteCode {
+	constructor(condition, code, script, startLine, endLine) {
+		super(CodeTypes.WHILE, script);
+		this.condition = condition;
+		this.code = code;
+		this.startLine = startLine;
+		this.endLine = endLine;
+	}
+
+	execute() {
+		let value = this.condition;
+		if(typeof value.getValue === "function") {
+			value = value.getValue();
+		}
+
+		if(value) {
+			executeNext(this.code, -1, this);
+		} else {
+			this.script._currentLine = this.endLine;
+		}
+	}
+
+	executeLine(lineNum) {
+		if(lineNum < this.code.length) {
+			
+			if(typeof this.code[lineNum].moveFromTempVariables === "function") {
+				this.code[lineNum].script = this.script;
+				this.code[lineNum].moveFromTempVariables();
+			}
+			let value = this.code[lineNum].execute();
+			
+			if(this.script.callback) {
+				this.script.callback(this.code[lineNum], value);
+			}
+			if(this.code[lineNum].type != CodeTypes.ENDWHILE && this.code[lineNum].type != CodeTypes.ENDIF
+				&& this.code[lineNum].type != CodeTypes.WHILE && this.code[lineNum].type != CodeTypes.IF) {
+				this.script._currentLine++;
+			}
+			executeNext(this.code, lineNum, this);
+		}
+		else {
+			this.script._currentLine = this.startLine;
+			this.execute();
+		}
+	}
+
+	getValue() {
+		return this.execute();
+	}
+
+	moveFromTempVariables() {
+		if(this.condition instanceof Variable && !(this.condition instanceof Function)) {
+			this.condition = this.script.getVariable(this.condition.name);
+		}
+		else if(typeof this.condition.moveFromTempVariables === "function") {
+			this.condition.moveFromTempVariables();
+		}
+	}
+
+	getCurrentLine() {
+		return this.script._currentLine;
+	}
+
+	getEntity() {
+		return this.script.entity;
+	}
+}
+
+class ByteCodeENDWHILE extends ByteCode {
+	constructor(script) {
+		super(CodeTypes.ENDWHILE, script);
 	}
 }
 
@@ -350,7 +437,9 @@ var CodeTypes = {
 	MAKE_FUNCTION: "function",
 	SET: "set",
 	IF: "if",
-	ENDIF: "endif"
+	ENDIF: "endif",
+	WHILE: "while",
+	ENDWHILE: "endwhile"
 };
 
 var OperatorTypes = {

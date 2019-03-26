@@ -30,6 +30,16 @@ function parseLine(code) {
 		return {results: results, kind: CodeTypes.ENDIF};
 	}
 
+	results = whileStatement.exec(code);
+	if(results) {
+		return {results: results, kind: CodeTypes.WHILE};
+	}
+
+	results = endWhileStatement.exec(code);
+	if(results) {
+		return {results: results, kind: CodeTypes.ENDWHILE};
+	}
+
 	return null;
 }
 
@@ -197,11 +207,20 @@ class Script {
 		else if(results[i].kind === CodeTypes.IF) {
 			result = this.parseIf(results[i].results, results, i+1);
 			if(!(result instanceof Error)) {
-				i += result.code.length + 1;
+				i = result.endLine;
 			}
 		}
 		else if(results[i].kind === CodeTypes.ENDIF) {
 			result = new ByteCodeENDIF(this);
+		}
+		else if(results[i].kind === CodeTypes.WHILE) {
+			result = this.parseWhile(results[i].results, results, i+1);
+			if(!(result instanceof Error)) {
+				i += result.code.length + 1;
+			}
+		}
+		else if(results[i].kind === CodeTypes.ENDWHILE) {
+			result = new ByteCodeENDWHILE(this);
 		}
 
 		return [result, i];
@@ -311,6 +330,7 @@ class Script {
 		let inIf = false;
 		let foundEnd = false;
 		let code = [];
+		let saveLine = this._currentLine;
 		while(!foundEnd && position < results.length) {
 			this._currentLine++;
 			let compiledCode = this.parseByteCode(results, position);
@@ -345,7 +365,57 @@ class Script {
 			return new Error(ErrorNames.NOENDIF, "Missing endif", this._currentLine, this.name);
 		}
 
-		return new ByteCodeIF(condition, code, this);
+		return new ByteCodeIF(condition, code, this, saveLine, position - 1);
+	}
+
+	parseWhile(arr, results, position) {
+		let functionResults = this.parseFunctionCall(arr[1]);
+		let condition = functionResults;
+		if(condition === null) {
+			condition = this.parseValues(arr[1]);
+		}
+		if(condition instanceof Error) {
+			return condition;
+		}
+		
+		let inWhile = false;
+		let foundEnd = false;
+		let code = [];
+		let saveLine = this._currentLine;
+		while(!foundEnd && position < results.length) {
+			this._currentLine++;
+			let compiledCode = this.parseByteCode(results, position);
+			position = compiledCode[1];
+			compiledCode = compiledCode[0];
+
+			if(compiledCode instanceof Error) {
+				this.errors.push(compiledCode);
+			}
+			else {
+				if(compiledCode instanceof ByteCodeWHILE) {
+					inWhile = true;
+					position--;
+				}
+				else if(compiledCode instanceof ByteCodeENDWHILE) {
+					if(inWhile) {
+						inWhile = false;
+					}
+					else {
+						foundEnd = true;
+					}
+				}
+				if(!foundEnd) {
+					code.push(compiledCode);
+				}
+			}
+			position++;
+		}
+
+		if(!foundEnd) {
+			return new Error(ErrorNames.NOENDWHILE, "Missing endwhile", this._currentLine, this.name);
+		}
+
+		return new ByteCodeWHILE(condition, code, this, saveLine, position);
 	}
 
 	parseValues(values) {
@@ -519,28 +589,29 @@ class Script {
 			this.functions[i].script = this;
 		}
 
-		setTimeout((function() {
-			this.executeLine(0);
-		}).bind(this), this.entity.executionSpeed);
+		executeNext(this.byteCode, -1, this);
 		return [];
 	}
 
 	executeLine(lineNum) {
 		if(lineNum < this.byteCode.length) {
-			this._currentLine++;
+			
 			if(typeof this.byteCode[lineNum].moveFromTempVariables === "function") {
 				this.byteCode[lineNum].script = this;
 				this.byteCode[lineNum].moveFromTempVariables();
 			}
 			try {
 				let value = this.byteCode[lineNum].execute();
+				
 				if(this.callback)
 				{
 					this.callback(this.byteCode[lineNum], value);
 				}
-				setTimeout((function() {
-					this.executeLine(lineNum + 1);
-				}).bind(this), this.entity.executionSpeed);
+				if(this.code[lineNum].type != CodeTypes.ENDWHILE && this.code[lineNum].type != CodeTypes.ENDIF
+					&& this.code[lineNum].type != CodeTypes.WHILE && this.code[lineNum].type != CodeTypes.IF) {
+					this._currentLine++;
+				}
+				executeNext(this.byteCode, lineNum, this);
 			}
 			catch(error) {
 				if(error instanceof InternalError) {
@@ -592,6 +663,34 @@ class Script {
 
 		return values;
 	}
+
+	getCurrentLine() {
+		return this._currentLine;
+	}
+
+	getEntity() {
+		return this.entity;
+	}
+}
+
+function executeNext(code, lineNum, callingObj) {
+	let executeLineFunction = function(){
+		callingObj.executeLine(lineNum + 1);
+	};
+
+	// If the code that was just executed was a looping or if structure
+	// wait until it gets done before moving on.
+	if((code.length > lineNum && lineNum >= 0) && (code[lineNum].type === CodeTypes.WHILE || code[lineNum].type === CodeTypes.IF)) {
+		var executingLineInterval = setInterval(function(){
+			if(callingObj.getCurrentLine() >= code[lineNum].endLine) {
+				clearInterval(executingLineInterval);
+				setTimeout(executeLineFunction, callingObj.getEntity().executionSpeed);
+			}
+		}, 50);
+	}
+	else {
+		setTimeout(executeLineFunction, callingObj.getEntity().executionSpeed);
+	}
 }
 
 class Error {
@@ -617,7 +716,8 @@ var ErrorNames = {
 	INVALID_SYNTAX: "Invalid Syntax",
 	RESTRICTED: "Access Restricted",
 	STACK_OVERFLOW: "Stack Overflow",
-	NOENDIF: "Missing endif"
+	NOENDIF: "Missing endif",
+	NOENDWHILE: "Missing endwhile"
 };
 
 
@@ -628,7 +728,9 @@ var existingVarGet = /^([a-zA-Z_][a-zA-Z0-9_]*);$/;
 var functionCall = /^([a-zA-Z_][a-zA-Z0-9_]*)\((.*?)\);$/;
 var stringRegEx = /(?:^'(?:[^']|(?:\\'))*'$)|(?:^"(?:[^"]|(?:\\"))*"$)/;
 var ifStatement = /^if\s*(.+)/;
+var whileStatement = /^while\s*(.+)/;
 var endIfStatement = /^endif$/;
+var endWhileStatement = /^endwhile$/;
 var valueSeparators = /[-+\/%*|&<>]/;
 
 var escapeCharactersReg = [

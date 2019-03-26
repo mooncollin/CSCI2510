@@ -153,6 +153,15 @@ var gameStateHandler = {
 					this.interpreterOutputArr.shift();
 				}
 				this.interpreterOutput.value = this.interpreterOutputArr.join("\n");
+				break;
+			case "chatOutput":
+				if(event.clear) {
+					this.chatOutput.value = "";
+				}
+				if(event.output != null) {
+					this.chatOutput.value += event.output;
+				}
+				this.chatOutput.scrollTop = this.chatOutput.scrollHeight;
 		}
 	},
 	update() {
@@ -243,7 +252,8 @@ var gameStateHandler = {
 		let attributes = [
 			["Level", this.player.level],
 			["Health", this.player.health],
-			["Speed", this.player.speed],
+			["Movement Speed", this.player.speed],
+			["Execution Speed", Math.pow(this.player.executionSpeed / PLAYER_STARTING_EXECUTION_SPEED, -1).toFixed(2)],
 			["Number of scripts", this.player.scripts.length]
 		];
 

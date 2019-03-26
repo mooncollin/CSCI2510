@@ -16,8 +16,7 @@ function clearWindow() {
 }
 
 function print(output) {
-	let chatWindow = gameStateHandler.chatOutput;
-	chatWindow.value += output;
+	update({name: "chatOutput", output: output, clear: false});
 	return true;
 }
 
@@ -50,7 +49,7 @@ function printf(output, ...args) {
 function clearChat() {
 	let chatWindow = gameStateHandler.chatOutput;
 	let previousString = chatWindow.value;
-	chatWindow.value = "";
+	update({name: "chatOutput", output: null, clear: true});
 	return previousString != chatWindow.value;
 }
 
