@@ -9,6 +9,11 @@ class GameObject {
 	render(ctx) {
 		for(let i = 0; i < this.components.length; i++) {
 			if(typeof this.components[i].render === "function") {
+				if(this.hasComponent(CollidingComponent)) {
+					if(!this.inScreen()) {
+						continue;
+					}
+				}
 				this.components[i].render(ctx, this);
 			}
 		}
@@ -17,6 +22,11 @@ class GameObject {
 	renderMinimap(ctx) {
 		for(let i = 0; i < this.minimapComponents.length; i++) {
 			if(typeof this.minimapComponents[i].render === "function") {
+				if(this.hasComponent(CollidingComponent)) {
+					if(!this.inScreen()) {
+						continue;
+					}
+				}
 				this.minimapComponents[i].render(ctx, this);
 			}
 		}

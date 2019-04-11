@@ -15,8 +15,16 @@ class Chicken extends Entity {
 		this.level = 1;
 		this.health = 10;
 		this.components.push(new EquipmentComponent(this));
+		this.components.push(new CollidingComponent(this, COLLISION_TYPES.PASSIVE));
+		this.components.push(new AttackComponent(this));
 
 		this.moveStatus = 0;
+	}
+
+	defineBoundary() {
+		this.boundary = new AxisAlignedRectangle(6, 12);
+		this.components.push(new GeometryRendererComponent("blue", this.boundary, 1, 3.5));
+		this.boundary = new GeometryComponent(this.boundary, 1, 3.5);
 	}
 
 	defineTransforms() {

@@ -32,8 +32,9 @@ class Player extends Entity {
 	}
 
 	defineBoundary() {
-		this.boundary = new AxisAlignedRectangle(4, 4);
-		// this.components.push(new GeometryRendererComponent("blue", this.boundary,));
+		this.boundary = new AxisAlignedRectangle(7.2, 10.4);
+		this.components.push(new GeometryRendererComponent("blue", this.boundary, 0, 2.4));
+		this.boundary = new GeometryComponent(this.boundary, 0, 2.4);
 	}
 
 	defineTransforms() {
