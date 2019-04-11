@@ -10,6 +10,8 @@ var gameStateHandler = {
 
 		this.textareaSection.appendChild(this.interpreterTemplate.content.cloneNode(true));
 
+		this.gameWidth = 2000;
+		this.gameHeight = 2000;
 		this.canvas = document.getElementById("gameCanvas");
 		this.width = this.canvas.width;
 		this.height = this.canvas.height;
@@ -51,13 +53,13 @@ var gameStateHandler = {
 		};
 		
 		this.selectedInventory = 0;
-		this.player = new Player();
-		this.player.transform.scale.x = 0.2;
-		this.player.transform.scale.y = 0.2;
+		this.player = new Player(0, 0, 0.2, 0.2);
 		this.cameraZoom = 30;
 		this.minimapZoom = 10;
 
 		this.hierachy = [];
+		let chicken = new Chicken(5, 5, 0.1, 0.1);
+		this.hierachy.push(chicken);
 		this.hierachy.push(this.player);
 
 		update({name: "statChange"});
@@ -121,6 +123,8 @@ var gameStateHandler = {
 		}
 
 		this.player.equipmentPut(new RuggedShirt());
+		this.player.equipmentPut(new Footwraps());
+		this.player.equipmentPut(new WornTrousers());
 
 		this.player.addScript(new Script("script 1", "", Status.PLAYER, null, null, scriptCallback));
 	},
@@ -252,6 +256,8 @@ var gameStateHandler = {
 		let attributes = [
 			["Level", this.player.level],
 			["Health", this.player.health],
+			["Defense", this.player.defense],
+			["Attack", this.player.attack],
 			["Movement Speed", this.player.speed],
 			["Execution Speed", Math.pow(this.player.executionSpeed / PLAYER_STARTING_EXECUTION_SPEED, -1).toFixed(2)],
 			["Number of scripts", this.player.scripts.length]
@@ -303,24 +309,23 @@ var gameStateHandler = {
 			this.miniCtx.translate(this.miniWidth / 2, this.miniHeight / 2);
 			this.miniCtx.scale(this.minimapZoom, this.minimapZoom);
 
+			this.miniCtx.scale(1, -1);
+
+			// Camera
+			this.miniCtx.translate(-this.player.transform.position.x, -this.player.transform.position.y);
+			
 			this.miniCtx.save();
 			{
-				this.miniCtx.scale(1, -1);
-				
-				this.miniCtx.save();
-				{
-					for(let i = 0; i < this.hierachy.length; i++) {
-						let gameObject = this.hierachy[i];
-						if(typeof gameObject.renderMinimap === 'function') {
-							this.miniCtx.save();
-							this.miniCtx.translate(gameObject.transform.position.x, gameObject.transform.position.y);
-							this.miniCtx.scale(gameObject.transform.scale.x, gameObject.transform.scale.y);
-							gameObject.renderMinimap(this.miniCtx);
-							this.miniCtx.restore();
-						}
+				for(let i = 0; i < this.hierachy.length; i++) {
+					let gameObject = this.hierachy[i];
+					if(typeof gameObject.renderMinimap === 'function') {
+						this.miniCtx.save();
+						this.miniCtx.translate(gameObject.transform.position.x, gameObject.transform.position.y);
+						this.miniCtx.scale(gameObject.transform.scale.x, gameObject.transform.scale.y);
+						gameObject.renderMinimap(this.miniCtx);
+						this.miniCtx.restore();
 					}
 				}
-				this.miniCtx.restore();
 			}
 			this.miniCtx.restore();
 		}
@@ -328,33 +333,31 @@ var gameStateHandler = {
 	},
 	renderGame() {
 		this.ctx.fillStyle = "rgb(18, 158, 23)";
-		this.ctx.fillRect(0, 0, this.width, this.height);
+		this.ctx.fillRect(0, 0, this.gameWidth, this.gameHeight);
 
 		// Render GUI
 
 		this.ctx.save();
 		{
-			this.ctx.translate(this.width / 2, this.height / 2);
+			this.ctx.translate(this.width/2, this.height/2);
 			this.ctx.scale(this.cameraZoom, this.cameraZoom);
+			this.ctx.scale(1, -1);
 
+			// Camera
+			this.ctx.translate(-this.player.transform.position.x, -this.player.transform.position.y);
+			
 			this.ctx.save();
 			{
-				this.ctx.scale(1, -1);
-				
-				this.ctx.save();
-				{
-					for(let i = 0; i < this.hierachy.length; i++) {
-						let gameObject = this.hierachy[i];
-						if(typeof gameObject.render === 'function') {
-							this.ctx.save();
-							this.ctx.translate(gameObject.transform.position.x, gameObject.transform.position.y);
-							this.ctx.scale(gameObject.transform.scale.x, gameObject.transform.scale.y);
-							gameObject.render(this.ctx);
-							this.ctx.restore();
-						}
+				for(let i = 0; i < this.hierachy.length; i++) {
+					let gameObject = this.hierachy[i];
+					if(typeof gameObject.render === 'function') {
+						this.ctx.save();
+						this.ctx.translate(gameObject.transform.position.x, gameObject.transform.position.y);
+						this.ctx.scale(gameObject.transform.scale.x, gameObject.transform.scale.y);
+						gameObject.render(this.ctx);
+						this.ctx.restore();
 					}
 				}
-				this.ctx.restore();
 			}
 			this.ctx.restore();
 		}
@@ -426,7 +429,7 @@ function interpreterCallback(byteCode, funcValue, preExtra="", postExtra="") {
 	}
 }
 
-// Used to output errors to the interpreter window
+// Used to output errors to the interpreter window from scripts
 function scriptCallback(byteCode, value, preExtra, postExtra) {
 	let output = null;
 	if(byteCode instanceof Error) {

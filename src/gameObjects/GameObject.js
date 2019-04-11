@@ -1,7 +1,7 @@
 //A generic GameObject class
 class GameObject {
-	constructor() {
-		this.transform = new Transform();
+	constructor(xPosition=0, yPosition=0, xScale=1, yScale=1) {
+		this.transform = new Transform(new Vector2(xPosition, yPosition), new Vector2(xScale, yScale));
 		this.components = [];
 		this.minimapComponents = [];
 	}
@@ -20,5 +20,23 @@ class GameObject {
 				this.minimapComponents[i].render(ctx, this);
 			}
 		}
+	}
+
+	update() {
+		for(let i = 0; i < this.components.length; i++) {
+			if(typeof this.components[i].update === "function") {
+				this.components[i].update(this);
+			}
+		}
+	}
+
+	hasComponent(componentClassType) {
+		for(let i = 0; i < this.components.length; i++) {
+			if(this.components[i] instanceof componentClassType) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 }

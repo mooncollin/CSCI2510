@@ -21,9 +21,10 @@ function nothing(slot) {
 
 function baseAttributes() {
 	return {
+		"attack"	: 0,
 		"defense"	: 0,
 		"color"		: "",
-		"type"		: "none"
+		"type"		: EQUIPMENT_ATTRIBUTES_TYPES.NONE
 	};
 }
 
@@ -43,7 +44,17 @@ var EQUIPMENT_TYPES = [
 ];
 
 var EQUIPMENT_ATTRIBUTES = [
+	"attack",
 	"defense",
 	"color",
 	"type"
 ];
+
+var EQUIPMENT_ATTRIBUTES_TYPES = {
+	NONE: "none",
+	CLOTH: "cloth",
+	LEATHER: "leather",
+	IRON: "iron",
+	STEEL: "steel",
+	MITHRIL: "mithril",
+};

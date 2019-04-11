@@ -48,6 +48,20 @@ var loadStateHandler = {
 			images.equipment[bodyItems[i]].src = 'images/equipment/' + bodyItems[i] + '.png';
 		}
 
+		// FEET ITEMS
+		for(let i = 0; i < feetItems.length; i++) {
+			images.equipment[feetItems[i]] = new Image();
+			images.equipment[feetItems[i]].onload = loadImage;
+			images.equipment[feetItems[i]].src = 'images/equipment/' + feetItems[i] + '.png';
+		}
+
+		// LEG ITEMS
+		for(let i = 0; i < legItems.length; i++) {
+			images.equipment[legItems[i]] = new Image();
+			images.equipment[legItems[i]].onload = loadImage;
+			images.equipment[legItems[i]].src = 'images/equipment/' + legItems[i] + '.png';
+		}
+
 		images.misc = {};
 		images.misc.select = new Image();
 		images.misc.select.onload = loadImage;

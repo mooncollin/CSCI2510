@@ -1,11 +1,13 @@
 class Player extends Entity {
-	constructor() {
-		super();
+	constructor(xPosition=0, yPosition=0, xScale=1, yScale=1) {
+		super(xPosition, yPosition, xScale, yScale);
 		
 		let minimapBlock = new AxisAlignedRectangle(1, 1);
 
-		this.leftArm = new GeometryRendererComponent("yellow", this.legBlock, 3, 2.8);
-		this.rightArm = new GeometryRendererComponent("yellow", this.legBlock, -3, 2.8);
+		let armBlock = new AxisAlignedRectangle(1, 1.5);
+
+		this.leftArm = new GeometryRendererComponent("yellow", armBlock, 3, 2.8);
+		this.rightArm = new GeometryRendererComponent("yellow", armBlock, -3, 2.8);
 		let playerBlockRenderMinimap = new GeometryRendererComponent("white", minimapBlock);
 		
 		this.components.push(this.leftArm);
@@ -21,16 +23,17 @@ class Player extends Entity {
 		for(let i = 0; i < this.MAX_INVENTORY; i++) {
 			this.inventory.items.push(null);
 		}
+
+		this.components.push(new EquipmentComponent(this));
+		this.components.push(new CollidingComponent(this, COLLISION_TYPES.PASSIVE));
+		this.components.push(new AttackComponent(this));
+		this.selectedInventory = 0;
+		this.selectedEquipment = 0;
 	}
 
-	nothingEquipmentSlot(slot) {
-		let result = [];
-		
-		for(let i = 0; i < this.equipmentTransforms[slot].length; i++) {
-			result.push(new GeometryRendererComponent(this.colors[slot], this.blocks[slot], this.equipmentTransforms[slot][i].position.x, this.equipmentTransforms[slot][i].position.y));
-		}
-
-		return result;
+	defineBoundary() {
+		this.boundary = new AxisAlignedRectangle(4, 4);
+		// this.components.push(new GeometryRendererComponent("blue", this.boundary,));
 	}
 
 	defineTransforms() {
@@ -77,6 +80,7 @@ class Player extends Entity {
 			for(let i = 0; i < this.inventory.items.length; i++) {
 				if(this.inventory.items[i] === null) {
 					this.inventory.items[i] = item;
+					update({name: "statChange"});
 					return true;
 				}
 			}
@@ -84,6 +88,7 @@ class Player extends Entity {
 		else {
 			if(this.inventory.items[index] === null) {
 				this.inventory.items[index] = item;
+				update({name: "statChange"});
 				return true;
 			}
 		}
@@ -98,6 +103,9 @@ class Player extends Entity {
 
 		let item = this.inventory.items[index];
 		this.inventory.items[index] = null;
+
+		update({name: "statChange"});
+
 		return item;
 	}
 
@@ -135,6 +143,18 @@ class Player extends Entity {
 		}
 		
 		return null;
+	}
+
+	getSelectedEquipment() {
+		return this.equipment[EQUIPMENT_TYPES[this.selectedEquipment]];
+	}
+
+	getSelectedInventory() {
+		if(this.selectedInventory < 0 || this.selectedInventory >= this.inventory.items.length) {
+			return null;
+		}
+
+		return this.inventory.items[this.selectedInventory];
 	}
 }
 
