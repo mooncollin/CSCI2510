@@ -84,6 +84,31 @@ class CollidingComponent extends Component {
 				new Vector2(screenRight, screenBottom)
 			);
 		};
+
+		gameObject.inMinimap = function() {
+			let firstWidth = gameObject.boundary.geometry.width * gameObject.transform.scale.x;
+			let firstHeight = gameObject.boundary.geometry.height * gameObject.transform.scale.y;
+
+			let firstLeft = -firstWidth/2 + gameObject.boundary.offsetX * gameObject.transform.scale.x + gameObject.transform.position.x;
+			let firstTop = firstHeight/2 + gameObject.boundary.offsetY * gameObject.transform.scale.y + gameObject.transform.position.y;
+			let firstRight = firstLeft + firstWidth;
+			let firstBottom = firstTop - firstHeight;
+
+			let secondWidth = gameStateHandler.width/(gameStateHandler.minimapZoom*3.2);
+			let secondHeight = gameStateHandler.height/(gameStateHandler.minimapZoom*3.2);
+
+			let screenLeft = gameStateHandler.player.transform.position.x + -secondWidth/2;
+			let screenTop = gameStateHandler.player.transform.position.y + secondHeight/2;
+			let screenRight = screenLeft + secondWidth;
+			let screenBottom = screenTop - secondHeight;
+
+			return gameObject.inCollisionPoints(
+				new Vector2(firstLeft, firstTop),
+				new Vector2(firstRight, firstBottom),
+				new Vector2(screenLeft, screenTop),
+				new Vector2(screenRight, screenBottom)
+			);
+		}
 	}
 }
 

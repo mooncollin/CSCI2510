@@ -2,7 +2,7 @@ class Chicken extends Entity {
 	constructor(xPosition=0, yPosition=0, xScale=1, yScale=1) {
 		super(xPosition, yPosition, xScale, yScale);
 
-		let minimapBlock = new AxisAlignedRectangle(2, 2);
+		let minimapBlock = new AxisAlignedRectangle(4, 4);
 		let blockRenderMinimap = new GeometryRendererComponent("yellow", minimapBlock);
 
 		let beakBlock = new AxisAlignedRectangle(1.7, 2);
@@ -23,7 +23,7 @@ class Chicken extends Entity {
 
 	defineBoundary() {
 		this.boundary = new AxisAlignedRectangle(6, 12);
-		this.components.push(new GeometryRendererComponent("blue", this.boundary, 1, 3.5));
+		// this.components.push(new GeometryRendererComponent("blue", this.boundary, 1, 3.5));
 		this.boundary = new GeometryComponent(this.boundary, 1, 3.5);
 	}
 

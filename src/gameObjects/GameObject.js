@@ -23,7 +23,7 @@ class GameObject {
 		for(let i = 0; i < this.minimapComponents.length; i++) {
 			if(typeof this.minimapComponents[i].render === "function") {
 				if(this.hasComponent(CollidingComponent)) {
-					if(!this.inScreen()) {
+					if(!this.inMinimap()) {
 						continue;
 					}
 				}

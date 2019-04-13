@@ -2,7 +2,7 @@ class Player extends Entity {
 	constructor(xPosition=0, yPosition=0, xScale=1, yScale=1) {
 		super(xPosition, yPosition, xScale, yScale);
 		
-		let minimapBlock = new AxisAlignedRectangle(1, 1);
+		let minimapBlock = new AxisAlignedRectangle(2, 2);
 
 		let armBlock = new AxisAlignedRectangle(1, 1.5);
 
@@ -33,7 +33,7 @@ class Player extends Entity {
 
 	defineBoundary() {
 		this.boundary = new AxisAlignedRectangle(7.2, 10.4);
-		this.components.push(new GeometryRendererComponent("blue", this.boundary, 0, 2.4));
+		// this.components.push(new GeometryRendererComponent("blue", this.boundary, 0, 2.4));
 		this.boundary = new GeometryComponent(this.boundary, 0, 2.4);
 	}
 
