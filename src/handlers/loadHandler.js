@@ -110,20 +110,22 @@ var loadStateHandler = {
 	},
 	loadTileImages(images) {
 		images.tiles = {};
-		let tileImageNames = ['bigTree1', 'bigTree2', 'bigTree3', 'bigTree4', 'bucket', 'bush1', 
-			'bush2', 'bush3', 'bush4', 'bush5', 'cave', 'clifEdge', 'cliff1', 'cliff2', 'cliff3', 
-			'dirt', 'edge', 'edge2', 'edgeBottom', 'edgeBottomCorner', 'edgeBottomRight', 'edgeLeft', 
-			'edgeLeftCorner', 'edgeRight', 'edgeRightCorner', 'edgeTop', 'fence', 'fence2', 
-			'fenceLeftCorner1', 'fenceLeftCorner2', 'fenceRightCorner1', 'fenceRightCorner2', 'flower1', 
-			'flower2', 'grass', 'grass1', 'grass2', 'grass3', 'grass4', 'grassLeft', 'grassMiddle', 
-			'grassTop', 'ironBar', 'path2', 'path3', 'path4', 'path5', 'path6', 'pathBottom', 'pathBottomLeftCorner', 
-			'pathBottomRightCorner', 'pathLeft', 'pathLeftTopCorner', 'pathRight1', 'pathRight2', 'pathRightTopCorner', 
-			'pathTop', 'plant1', 'plant2', 'plant3', 'reedBottom', 'reedTop', 'rock1', 'rock2', 'roof', 
-			'roofBottomLeftCorner', 'roofEdgeLeft', 'roofEdgeRight', 'roofTileBottom', 'roofTileBottomRightCorner', 
-			'roofTileCorner', 'roofTileLeft', 'roofTileRight', 'roofTileSide1', 'roofTileSide2', 'roofTileSide3', 
-			'roofTop', 'shrub', 'smallBush', 'stairs1', 'stairs2', 'stairs3', 'stone1', 'stone2', 'stone3', 'stone4', 
-			'stump', 'tallGrass', 'tallGrassAround', 'tallGrassBottom', 'tallGrassEdge', 'tallGrassRight', 'tallGrassTop', 
-			'tallGrassTopLeft', 'tallGrassTopRight', 'treeBottom', 'treeTop', 'water1', 'water2', 'well', 'wellBottom', 'wellTop'
+		let tileImageNames = ['bigTree1', 'bigTree2', 'bigTree3', 'bigTree4', 'bucket', 
+			'bush1', 'bush2', 'bush3', 'bush4', 'bush5', 'cliff1', 'cliff2', 'cliff3', 
+			'cliffEdge', 'dirt', 'edgeBottom', 'edgeBottomCorner', 'edgeBottomRight', 
+			'edgeLeft', 'edgeLeftCorner', 'edgeRight', 'edgeRightCorner', 'edgeTop', 
+			'entrance', 'fence', 'fence2', 'fenceLeftCorner1', 'fenceLeftCorner2', 'fenceRightCorner1', 
+			'fenceRightCorner2', 'flower1', 'flower2', 'grass', 'grass1', 'grass2', 'grass3', 
+			'grass4', 'grass5', 'grass66', 'grassLeft', 'grassMiddle', 'grassTop', 'ironBar', 
+			'path1', 'path2', 'path3', 'path4', 'path5', 'path6', 'pathBottom', 'pathBottomLeftCorner', 
+			'pathBottomRightCorner', 'pathLeft', 'pathLeftTopCorner', 'pathRight', 'pathRightTopCorner', 
+			'pathTop', 'plant1', 'plant2', 'plant3', 'reedBottom', 'reedTop', 'rock1', 'rock2', 
+			'roof', 'roofBottomLeftCorner', 'roofEdgeLeft', 'roofEdgeRight', 'roofTileBottom', 
+			'roofTileBottomRightCorner', 'roofTileCorner', 'roofTileLeft', 'roofTileRight', 'roofTileSide1', 
+			'roofTileSide2', 'roofTileSide3', 'roofTop', 'shrub', 'smallBush', 'stairs1', 'stairs2', 
+			'stairs3', 'stone1', 'stone2', 'stone3', 'stone4', 'stump', 'tallGrass', 'tallGrassAround', 
+			'tallGrassBottom', 'tallGrassEdge', 'tallGrassRight', 'tallGrassTop', 'tallGrassTopLeft', 
+			'tallGrassTopRight', 'treeBottom', 'treeTop', 'water1', 'water2', 'well', 'wellBottom', 'wellTop'
 		];
 
 		for(let i = 0; i < tileImageNames.length; i++) {

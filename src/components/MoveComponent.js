@@ -51,30 +51,59 @@ class MoveComponent extends Component {
 		};
 
 		gameObject.canMove = function(x, y) {
-			let tile = gameStateHandler.getMapTile(gameObject.transform.position.x + x, gameObject.transform.position.y + y);
-			for(let i = 0; i < gameStateHandler.IMPASSIBLE_TILES.length; i++) {
-				if(tile == gameStateHandler.IMPASSIBLE_TILES[i]) {
-					return false;
-				}
-			}
-			return true;
+			return gameObject.canMoveX(x) && gameObject.canMoveY(y);
 		};
 
 		gameObject.canMoveX = function(x) {
-			let tile = gameStateHandler.getMapTile(gameObject.transform.position.x + x, gameObject.transform.position.y);
+			let tiles = []
+			if(gameObject.hasComponent(CollidingComponent)) {
+				let currentX = gameObject.transform.position.x;
+				if(x < 0) {
+					currentX = gameObject.getBoundaryLeft();
+				}
+				else {
+					currentX = gameObject.getBoundaryRight();
+				}
+				tiles.push(gameStateHandler.getMapTile(currentX + x, gameObject.transform.position.y));
+				tiles.push(gameStateHandler.getMapTile(currentX + x, gameObject.getBoundaryTop()));
+				tiles.push(gameStateHandler.getMapTile(currentX + x, gameObject.getBoundaryBottom()));
+			}
+			else {
+				tiles.push(gameStateHandler.getMapTile(gameObject.transform.position.x + x, gameObject.transform.position.y));
+			}
+
 			for(let i = 0; i < gameStateHandler.IMPASSIBLE_TILES.length; i++) {
-				if(tile === gameStateHandler.IMPASSIBLE_TILES[i]) {
-					return false;
+				for(let j = 0; j < tiles.length; j++) {
+					if(tiles[j] === gameStateHandler.IMPASSIBLE_TILES[i]) {
+						return false;
+					}
 				}
 			}
 			return true;
 		};
 
 		gameObject.canMoveY = function(y) {
-			let tile = gameStateHandler.getMapTile(gameObject.transform.position.x, gameObject.transform.position.y + y);
+			let tiles = [];
+			if(gameObject.hasComponent(CollidingComponent)) {
+				let currentY = gameObject.transform.position.y;
+				if(y < 0) {
+					currentY = gameObject.getBoundaryBottom();
+				}
+				else {
+					currentY = gameObject.getBoundaryTop();
+				}
+				tiles.push(gameStateHandler.getMapTile(gameObject.transform.position.x, currentY + y));
+				tiles.push(gameStateHandler.getMapTile(gameObject.getBoundaryLeft(), currentY + y));
+				tiles.push(gameStateHandler.getMapTile(gameObject.getBoundaryRight(), currentY + y));
+			}
+			else {
+				tiles.push(gameStateHandler.getMapTile(gameObject.transform.position.x, gameObject.transform.position.y + y));
+			}
 			for(let i = 0; i < gameStateHandler.IMPASSIBLE_TILES.length; i++) {
-				if(tile === gameStateHandler.IMPASSIBLE_TILES[i]) {
-					return false;
+				for(let j = 0; j < tiles.length; j++) {
+					if(tiles[j] === gameStateHandler.IMPASSIBLE_TILES[i]) {
+						return false;
+					}
 				}
 			}
 			return true;

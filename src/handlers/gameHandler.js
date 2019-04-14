@@ -10,8 +10,8 @@ var gameStateHandler = {
 
 		this.textareaSection.appendChild(this.interpreterTemplate.content.cloneNode(true));
 
-		this.gameWidth = 8000;
-		this.gameHeight = 8000;
+		this.gameWidth = 16000;
+		this.gameHeight = 16000;
 		this.canvas = document.getElementById("gameCanvas");
 		this.width = this.canvas.width;
 		this.height = this.canvas.height;
@@ -49,19 +49,58 @@ var gameStateHandler = {
 			}
 		}
 
+		fillMap(map);
+
 		this.IMPASSIBLE_TILES = [
-			images.tiles.bigTree1, images.tiles.bigTree2, images.tiles.bigTree3,
+			images.tiles.bigTree3,
 			images.tiles.bigTree4, images.tiles.cliff1, images.tiles.cliff2,
-			images.tiles.cliff3, images.tiles.treeBottom, images.tiles.treeTop,
+			images.tiles.cliff3, images.tiles.treeBottom,
 			images.tiles.ironBar, images.tiles.fence, images.tiles.fence2,
 			images.tiles.fenceLeftCorner1, images.tiles.fenceLeftCorner2, images.tiles.fenceRightCorner1,
 			images.tiles.fenceRightCorner2, images.tiles.wellBottom, images.tiles.wellTop,
-			images.tiles.well, images.tiles.roof, images.tiles.roofBottomLeftCorner,
-			images.tiles.roofEdgeLeft, images.tiles.roofEdgeRight, images.tiles.roofTileBottom,
-			images.tiles.roofTileBottomRightCorner, images.tiles.roofTileCorner, images.tiles.roofTileRight,
+			images.tiles.well, images.tiles.roof,
 			images.tiles.roofTileSide1, images.tiles.roofTileSide2, images.tiles.rootTileSide3,
 			images.tiles.roofTop, images.tiles.bush1, images.tiles.bush2,
 			images.tiles.bush3, images.tiles.bush4, images.tiles.bush5,
+		];
+
+		this.OVER_TILES = [
+			images.tiles.bigTree1, images.tiles.bigTree2,
+			images.tiles.roofBottomLeftCorner, images.tiles.roofEdgeLeft,
+			images.tiles.roofEdgeRight, images.tiles.roofTileBottom,
+			images.tiles.roofTileBottomRightCorner, images.tiles.roofTileCorner,
+			images.tiles.roofTileLeft, images.tiles.roofTileRight,
+			images.tiles.wellTop, images.tiles.treeTop
+		];
+
+		this.tileMappings = [
+			null, null, null, null, images.tiles.cliffEdge, images.tiles.dirt, images.tiles.grassTop,
+			images.tiles.grassMiddle, images.tiles.grassLeft, images.tiles.tallGrassTopLeft, images.tiles.tallGrassTop,
+			images.tiles.tallGrassTopRight, null, images.tiles.water1, images.tiles.water2, images.tiles.ironBar,
+			images.tiles.stone2, images.tiles.stone1, images.tiles.stone4, images.tiles.stone3, null, null, null, null,
+			images.tiles.edgeLeftCorner, images.tiles.edgeTop, images.tiles.edgeRight, images.tiles.grass1,
+			images.tiles.grass2, images.tiles.tallGrassEdge, images.tiles.tallGrass, images.tiles.tallGrassRight,
+			images.tiles.tallGrassAround, images.tiles.roofEdgeLeft, images.tiles.roofTop, images.tiles.roofTop,
+			images.tiles.roofTop, images.tiles.roofTop, images.tiles.roofEdgeRight, images.tiles.entrance,
+			null, null, null, null, images.tiles.edgeLeft, images.tiles.grass, images.tiles.edgeRight,
+			images.tiles.grass5, images.tiles.grass6, images.tiles.bush1, images.tiles.bush2, images.tiles.bush3,
+			images.tiles.bush4, images.tiles.roofTileLeft, images.tiles.roof, images.tiles.roof, images.tiles.roof,
+			images.tiles.roof, images.tiles.roofTileRight, null, null, null, null, null, images.tiles.edgeBottomCorner,
+			images.tiles.edgeBottom, images.tiles.edgeBottomRight, images.tiles.grass3, images.tiles.grass4, images.tiles.cliff1,
+			images.tiles.cliff2, images.tiles.cliff3, images.tiles.bush5, images.tiles.roofTileCorner, images.tiles.roofTileSide1,
+			images.tiles.roof, images.tiles.roof, images.tiles.roofTileSide2, images.tiles.roofTilesSide3, null, images.tiles.pathLeftTopCorner,
+			images.tiles.pathTop, images.tiles.pathRightTopCorner, images.tiles.path2, images.tiles.path3, images.tiles.path4,
+			images.tiles.path5, images.tiles.path6, images.tiles.stairs1, images.tiles.stairs2, images.tiles.stairs3, null,
+			images.tiles.wellTop, null, images.tiles.roofTileCorner, images.tiles.roofTileBottom, images.tiles.roofTileBottom, 
+			images.tiles.roofTileBottomRightCorner, null, null, images.tiles.pathLeft, images.tiles.path1, images.tiles.pathRight,
+			images.tiles.fence, images.tiles.fence2, images.tiles.fenceLeftCorner1, images.tiles.bigTree1, images.tiles.bigTree2,
+			images.tiles.treeTop, images.tiles.rock1, images.tiles.rock2, images.tiles.bucket, images.tiles.wellBottom,
+			images.tiles.well, null, null, null, null, null, null, images.tiles.pathBottomLeftCorner, images.tiles.pathBottom,
+			images.tiles.pathBottomRightCorner, images.tiles.fenceRightCorner1, images.tiles.fenceRightCorner2, images.tiles.fenceLeftCorner2,
+			images.tiles.bigTree3, images.tiles.bigTree4, images.tiles.treeBottom, images.tiles.flower1, images.tiles.flower2,
+			images.tiles.stump, images.tiles.shrub, images.tiles.reedTop, null, null, null, null, null, null, null, null, null,
+			null, null, null, null, null, null, images.tiles.smallBush, images.tiles.plant1, images.tiles.plant2, images.tiles.plant3,
+			images.tiles.reedBottom, null, null, null, null, null, null
 		];
 
 		this.map[this.gameWidth/(this.tileSize * 2) - 1][this.gameHeight/(this.tileSize * 2) - 1] = images.tiles.grassMiddle;
@@ -89,12 +128,12 @@ var gameStateHandler = {
 		};
 		
 		this.selectedInventory = 0;
-		this.player = new Player(0, 0, 0.2, 0.2);
+		this.player = new Player(0, 0, 0.15, 0.15);
 		this.cameraZoom = 30;
 		this.minimapZoom = 5;
 
 		this.hierachy = [];
-		let chicken = new Chicken(5, 5, 0.1, 0.1);
+		let chicken = new Chicken(5, 5, 0.07, 0.07);
 		this.hierachy.push(chicken);
 		this.hierachy.push(this.player);
 
@@ -384,12 +423,12 @@ var gameStateHandler = {
 			// Camera
 			this.ctx.translate(-this.player.transform.position.x, -this.player.transform.position.y);
 
-			//Map
+			//Under Map
 			this.ctx.save();
 			{
 				this.ctx.scale(1/this.cameraZoom, -1/this.cameraZoom);
 				this.ctx.scale(this.mapScale, this.mapScale);
-				this.renderMap();
+				this.renderUnderMap();
 			}
 			this.ctx.restore();
 			
@@ -407,6 +446,15 @@ var gameStateHandler = {
 				}
 			}
 			this.ctx.restore();
+
+			//Over Map
+			this.ctx.save();
+			{
+				this.ctx.scale(1/this.cameraZoom, -1/this.cameraZoom);
+				this.ctx.scale(this.mapScale, this.mapScale);
+				this.renderOverMap();
+			}
+			this.ctx.restore();
 		}
 		this.ctx.restore();
 	},
@@ -419,12 +467,46 @@ var gameStateHandler = {
 			}
 		}
 	},
+	renderOverMap() {
+		for(let x = 0; x < this.map.length; x++) {
+			for(let y = 0; y < this.map[x].length; y++) {
+				if(this.map[x][y] != null) {
+					for(let i = 0; i < this.OVER_TILES.length; i++) {
+						if(this.map[x][y] === this.OVER_TILES[i]) {
+							this.ctx.drawImage(this.map[x][y], x * this.tileSize - (this.gameWidth / (2 * this.tileSize) - 1) * this.tileSize, y * this.tileSize - (this.gameHeight / (2 * this.tileSize) - 1) * this.tileSize, this.tileSize, this.tileSize);
+							break;
+						}
+					}
+				}
+			}
+		}
+	},
+	renderUnderMap() {
+		for(let x = 0; x < this.map.length; x++) {
+			for(let y = 0; y < this.map[x].length; y++) {
+				if(this.map[x][y] != null) {
+					let found = false;
+					for(let i = 0; i < this.OVER_TILES.length; i++) {
+						if(this.map[x][y] === this.OVER_TILES[i]) {
+							found = true;
+							break;
+						}
+						
+					}
+					if(!found) {
+						this.ctx.drawImage(this.map[x][y], x * this.tileSize - (this.gameWidth / (2 * this.tileSize) - 1) * this.tileSize, y * this.tileSize - (this.gameHeight / (2 * this.tileSize) - 1) * this.tileSize, this.tileSize, this.tileSize);
+					}
+				}
+			}
+		}
+	},
 	getMapTile(x, y) {
+		y = -y;
 		let middleX = this.gameWidth / (this.tileSize * 2) - 1;
 		let middleY = this.gameHeight / (this.tileSize * 2) - 1;
 
-		let adjustedX = middleX + Math.floor((x * this.mapScale * 3) / this.tileSize);
-		let adjustedY = middleY + Math.floor((y * this.mapScale * 3) / this.tileSize);
+		let adjustedX = middleX + Math.floor((x * this.mapScale * 3.5) / this.tileSize);
+		let adjustedY = middleY + Math.floor((y * this.mapScale * 3.5) / this.tileSize);
 
 		if(adjustedX < 0) {
 			adjustedX = 0;
@@ -520,4 +602,10 @@ function scriptCallback(byteCode, value, preExtra, postExtra) {
 	else {
 		update({name: "interpreterOutput", output: preExtra + output + postExtra});
 	}
+}
+
+var MAP_CSV = "file://../Tile%20Map.csv";
+
+function fillMap(file, map) {
+	
 }

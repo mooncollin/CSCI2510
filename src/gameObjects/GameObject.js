@@ -27,7 +27,13 @@ class GameObject {
 						continue;
 					}
 				}
-				this.minimapComponents[i].render(ctx, this);
+				
+				ctx.save();
+				{
+					ctx.scale(1/this.transform.scale.x, 1/this.transform.scale.y);
+					this.minimapComponents[i].render(ctx, this);
+				}
+				ctx.restore();
 			}
 		}
 	}

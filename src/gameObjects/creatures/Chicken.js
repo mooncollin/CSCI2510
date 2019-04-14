@@ -2,7 +2,7 @@ class Chicken extends Entity {
 	constructor(xPosition=0, yPosition=0, xScale=1, yScale=1) {
 		super(xPosition, yPosition, xScale, yScale);
 
-		let minimapBlock = new AxisAlignedRectangle(4, 4);
+		let minimapBlock = new AxisAlignedRectangle(1, 1);
 		let blockRenderMinimap = new GeometryRendererComponent("yellow", minimapBlock);
 
 		let beakBlock = new AxisAlignedRectangle(1.7, 2);

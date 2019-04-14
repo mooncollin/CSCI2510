@@ -2,7 +2,7 @@ class Player extends Entity {
 	constructor(xPosition=0, yPosition=0, xScale=1, yScale=1) {
 		super(xPosition, yPosition, xScale, yScale);
 		
-		let minimapBlock = new AxisAlignedRectangle(2, 2);
+		let minimapBlock = new AxisAlignedRectangle(1, 1);
 
 		let armBlock = new AxisAlignedRectangle(1, 1.5);
 
