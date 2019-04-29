@@ -1,6 +1,6 @@
 class Player extends Entity {
 	constructor(xPosition=0, yPosition=0, xScale=1, yScale=1) {
-		super(xPosition, yPosition, xScale, yScale);
+		super("player", xPosition, yPosition, xScale, yScale);
 		
 		let minimapBlock = new AxisAlignedRectangle(1, 1);
 
@@ -19,6 +19,7 @@ class Player extends Entity {
 		this.MAX_INVENTORY = 20;
 		this.executionSpeed = PLAYER_STARTING_EXECUTION_SPEED;
 		this.scripts = [];
+		this.spawnRate = -1;
 
 		for(let i = 0; i < this.MAX_INVENTORY; i++) {
 			this.inventory.items.push(null);

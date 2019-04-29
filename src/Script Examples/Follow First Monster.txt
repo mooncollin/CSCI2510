@@ -1,0 +1,23 @@
+var monsters = getAllMonsters();
+var monster = 0;
+var monsterLocation = 0;
+var myLocation = 0;
+var differenceX = 0;
+var differenceY = 0;
+var x = 0;
+var y = 0;
+
+while true
+	monster = getArray(monsters, 0);
+	myLocation = getLocation();
+	x = getArray(myLocation, 0);
+	y = getArray(myLocation, 1);
+	monsterLocation = getMonsterLocation(monster);
+	differenceX = getArray(monsterLocation, 0);
+	differenceX = differenceX - x;
+	differenceY = getArray(monsterLocation, 1);
+	differenceY = differenceY - y;
+	move(differenceX, differenceY);
+	attack();
+	monsters = getAllMonsters();
+endwhile

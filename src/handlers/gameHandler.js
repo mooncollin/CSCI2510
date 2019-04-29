@@ -37,42 +37,6 @@ var gameStateHandler = {
 		this.MAX_HISTORY = 25;
 		this.MAX_INTERPRETER_OUTPUT = 25;
 
-		this.map = [];
-		this.tileSize = 16;
-		this.mapScale = 3;
-		for(let i = 0; i < this.gameWidth / this.tileSize; i++)
-		{
-			this.map.push([]);
-			for(let j = 0; j < this.gameHeight / this.tileSize; j++)
-			{
-				this.map[i].push(null);
-			}
-		}
-
-		fillMap(map);
-
-		this.IMPASSIBLE_TILES = [
-			images.tiles.bigTree3,
-			images.tiles.bigTree4, images.tiles.cliff1, images.tiles.cliff2,
-			images.tiles.cliff3, images.tiles.treeBottom,
-			images.tiles.ironBar, images.tiles.fence, images.tiles.fence2,
-			images.tiles.fenceLeftCorner1, images.tiles.fenceLeftCorner2, images.tiles.fenceRightCorner1,
-			images.tiles.fenceRightCorner2, images.tiles.wellBottom, images.tiles.wellTop,
-			images.tiles.well, images.tiles.roof,
-			images.tiles.roofTileSide1, images.tiles.roofTileSide2, images.tiles.rootTileSide3,
-			images.tiles.roofTop, images.tiles.bush1, images.tiles.bush2,
-			images.tiles.bush3, images.tiles.bush4, images.tiles.bush5,
-		];
-
-		this.OVER_TILES = [
-			images.tiles.bigTree1, images.tiles.bigTree2,
-			images.tiles.roofBottomLeftCorner, images.tiles.roofEdgeLeft,
-			images.tiles.roofEdgeRight, images.tiles.roofTileBottom,
-			images.tiles.roofTileBottomRightCorner, images.tiles.roofTileCorner,
-			images.tiles.roofTileLeft, images.tiles.roofTileRight,
-			images.tiles.wellTop, images.tiles.treeTop
-		];
-
 		this.tileMappings = [
 			null, null, null, null, images.tiles.cliffEdge, images.tiles.dirt, images.tiles.grassTop,
 			images.tiles.grassMiddle, images.tiles.grassLeft, images.tiles.tallGrassTopLeft, images.tiles.tallGrassTop,
@@ -103,14 +67,40 @@ var gameStateHandler = {
 			images.tiles.reedBottom, null, null, null, null, null, null
 		];
 
-		this.map[this.gameWidth/(this.tileSize * 2) - 1][this.gameHeight/(this.tileSize * 2) - 1] = images.tiles.grassMiddle;
-		this.map[this.gameWidth/(this.tileSize * 2)][this.gameHeight/(this.tileSize * 2) - 1] = images.tiles.edgeRight;
-		this.map[this.gameWidth/(this.tileSize * 2) + 1][this.gameHeight/(this.tileSize * 2) - 1] = images.tiles.bigTree3;
-		this.map[this.gameWidth/(this.tileSize * 2) + 2][this.gameHeight/(this.tileSize * 2) - 1] = images.tiles.bigTree4;
-		this.map[this.gameWidth/(this.tileSize * 2) + 1][this.gameHeight/(this.tileSize * 2) - 2] = images.tiles.bigTree1;
-		this.map[this.gameWidth/(this.tileSize * 2) + 2][this.gameHeight/(this.tileSize * 2) - 2] = images.tiles.bigTree2;
-		this.map[this.gameWidth/(this.tileSize * 2) - 3][this.gameHeight/(this.tileSize * 2)] = images.tiles.treeBottom;
-		this.map[this.gameWidth/(this.tileSize * 2) - 3][this.gameHeight/(this.tileSize * 2) - 1] = images.tiles.treeTop;
+		this.map = [];
+		this.tileSize = 16;
+		this.mapScale = 3;
+		for(let i = 0; i < this.gameWidth / this.tileSize; i++)
+		{
+			this.map.push([]);
+			for(let j = 0; j < this.gameHeight / this.tileSize; j++)
+			{
+				let tile = this.tileMappings[loadStateHandler.mapData[j][i]];
+				this.map[i].push(tile);
+			}
+		}
+
+		this.IMPASSIBLE_TILES = [
+			images.tiles.bigTree3,
+			images.tiles.bigTree4, images.tiles.cliff1, images.tiles.cliff2,
+			images.tiles.cliff3, images.tiles.treeBottom,
+			images.tiles.ironBar, images.tiles.fence, images.tiles.fence2,
+			images.tiles.fenceLeftCorner1, images.tiles.fenceLeftCorner2, images.tiles.fenceRightCorner1,
+			images.tiles.fenceRightCorner2, images.tiles.wellBottom, images.tiles.wellTop,
+			images.tiles.well, images.tiles.roof,
+			images.tiles.roofTileSide1, images.tiles.roofTileSide2, images.tiles.rootTileSide3,
+			images.tiles.roofTop, images.tiles.bush1, images.tiles.bush2,
+			images.tiles.bush3, images.tiles.bush4, images.tiles.bush5,
+		];
+
+		this.OVER_TILES = [
+			images.tiles.bigTree1, images.tiles.bigTree2,
+			images.tiles.roofBottomLeftCorner, images.tiles.roofEdgeLeft,
+			images.tiles.roofEdgeRight, images.tiles.roofTileBottom,
+			images.tiles.roofTileBottomRightCorner, images.tiles.roofTileCorner,
+			images.tiles.roofTileLeft, images.tiles.roofTileRight,
+			images.tiles.wellTop, images.tiles.treeTop
+		];
 
 		this.equipmentImagesLocations = {
 			"head"		: [this.statWidth/2.4, this.statHeight/7],
@@ -133,8 +123,9 @@ var gameStateHandler = {
 		this.minimapZoom = 5;
 
 		this.hierachy = [];
-		let chicken = new Chicken(5, 5, 0.07, 0.07);
-		this.hierachy.push(chicken);
+		for(let i = 0; i < 10; i++) {
+			this.hierachy.push(new Chicken(Math.random() * i, Math.random() * i, 0.07, 0.07));
+		}
 		this.hierachy.push(this.player);
 
 		update({name: "statChange"});
@@ -157,6 +148,19 @@ var gameStateHandler = {
 		update({name: "addFunction", key: "openScript", value: openScript, status: Status.GAME});
 		update({name: "addFunction", key: "closeScript", value: closeScript, status: Status.GAME});
 		update({name: "addFunction", key: "executeScript", value: executeScript, status: Status.GAME});
+		update({name: "addFunction", key: "getArray", value: getArray, status: Status.GAME});
+		update({name: "addFunction", key: "popArray", value: popArray, status: Status.GAME});
+		update({name: "addFunction", key: "pushArray", value: pushArray, status: Status.GAME});
+		update({name: "addFunction", key: "unshiftArray", value: unshiftArray, status: Status.GAME});
+		update({name: "addFunction", key: "shiftArray", value: shiftArray, status: Status.GAME});
+		update({name: "addFunction", key: "getAllMonsters", value: getAllMonsters, status: Status.GAME});
+		update({name: "addFunction", key: "getMonsterName", value: getMonsterName, status: Status.GAME});
+		update({name: "addFunction", key: "getMonsterLocation", value: getMonsterLocation, status: Status.GAME});
+		update({name: "addFunction", key: "sizeArray", value: sizeArray, status: Status.GAME});
+		update({name: "addFunction", key: "stopScript", value: stopScript, status: Status.GAME});
+		update({name: "addFunction", key: "getLocation", value: getLocation, status: Status.GAME});
+		update({name: "addFunction", key: "abs", value: abs, status: Status.GAME});
+		update({name: "addFunction", key: "attack", value: attack, status: Status.GAME});
 
 
 		this.interpreterVariables = []; // Doesn't do anything but fix script to keep variables alive
@@ -241,6 +245,13 @@ var gameStateHandler = {
 					this.chatOutput.value += event.output;
 				}
 				this.chatOutput.scrollTop = this.chatOutput.scrollHeight;
+			case "entityDeath":
+				for(let i = 0; i < this.hierachy.length; i++) {
+					if(this.hierachy[i] === event.entity) {
+						this.hierachy.splice(i, 1);
+						break;
+					}
+				}
 		}
 	},
 	update() {
@@ -376,18 +387,27 @@ var gameStateHandler = {
 		}
 	},
 	renderMinimap() {
-		this.miniCtx.fillStyle = "rgb(18, 158, 23)";
+		this.miniCtx.fillStyle = "#83ac23";
 		this.miniCtx.fillRect(0, 0, this.miniWidth, this.miniHeight);
 
 		this.miniCtx.save();
 		{
 			this.miniCtx.translate(this.miniWidth / 2, this.miniHeight / 2);
-			this.miniCtx.scale(this.minimapZoom, this.minimapZoom);
-
 			this.miniCtx.scale(1, -1);
+			this.miniCtx.scale(this.minimapZoom, this.minimapZoom);
 
 			// Camera
 			this.miniCtx.translate(-this.player.transform.position.x, -this.player.transform.position.y);
+
+			// Under Map
+			this.miniCtx.save()
+			{
+				this.miniCtx.scale(1/this.minimapZoom, -1/this.minimapZoom);
+				this.miniCtx.scale(1/this.mapScale, 1/this.mapScale);
+				this.miniCtx.translate(-this.tileSize*this.mapScale * 1.5, 0);
+				this.renderMap(this.miniCtx, this.minimapZoom * this.mapScale, "under");
+			}
+			this.miniCtx.restore();
 			
 			this.miniCtx.save();
 			{
@@ -403,110 +423,126 @@ var gameStateHandler = {
 				}
 			}
 			this.miniCtx.restore();
+
+			// Over Map
+			this.miniCtx.save();
+			{
+				this.miniCtx.scale(1/this.minimapZoom, -1/this.minimapZoom);
+				this.miniCtx.scale(1/this.mapScale, 1/this.mapScale);
+				this.miniCtx.translate(-this.tileSize*this.mapScale * 1.5, 0);
+				this.renderMap(this.miniCtx, this.minimapZoom * this.mapScale, "over");
+			}
+			this.miniCtx.restore();
 		}
 		this.miniCtx.restore();
 	},
 	renderGame() {
-		this.ctx.fillStyle = "rgb(18, 158, 23)";
+		this.ctx.fillStyle = "#83ac23";
 		this.ctx.fillRect(0, 0, this.width, this.height);
 
 		// Render GUI
 
-
 		this.ctx.save();
 		{
-			this.ctx.translate(this.width/2, this.height/2);
-
-			this.ctx.scale(1, -1);
-			this.ctx.scale(this.cameraZoom, this.cameraZoom);
-
-			// Camera
-			this.ctx.translate(-this.player.transform.position.x, -this.player.transform.position.y);
-
-			//Under Map
 			this.ctx.save();
 			{
-				this.ctx.scale(1/this.cameraZoom, -1/this.cameraZoom);
-				this.ctx.scale(this.mapScale, this.mapScale);
-				this.renderUnderMap();
-			}
-			this.ctx.restore();
-			
-			this.ctx.save();
-			{
-				for(let i = 0; i < this.hierachy.length; i++) {
-					let gameObject = this.hierachy[i];
-					if(typeof gameObject.render === 'function') {
-						this.ctx.save();
-						this.ctx.translate(gameObject.transform.position.x, gameObject.transform.position.y);
-						this.ctx.scale(gameObject.transform.scale.x, gameObject.transform.scale.y);
-						gameObject.render(this.ctx);
-						this.ctx.restore();
+				this.ctx.translate(this.width/2, this.height/2);
+				this.ctx.scale(1, -1);
+				this.ctx.scale(this.cameraZoom, this.cameraZoom);
+
+				// Camera
+				this.ctx.translate(-this.player.transform.position.x, -this.player.transform.position.y);
+
+				// Under Map
+				this.ctx.save()
+				{
+					this.ctx.scale(1/this.cameraZoom, -1/this.cameraZoom);
+					this.ctx.scale(this.mapScale, this.mapScale);
+					this.renderMap(this.ctx, this.cameraZoom, "under");
+				}
+				this.ctx.restore();
+				
+				this.ctx.save();
+				{
+					for(let i = 0; i < this.hierachy.length; i++) {
+						let gameObject = this.hierachy[i];
+						if(typeof gameObject.render === 'function') {
+							this.ctx.save();
+							this.ctx.translate(gameObject.transform.position.x, gameObject.transform.position.y);
+							this.ctx.scale(gameObject.transform.scale.x, gameObject.transform.scale.y);
+							this.ctx.rotate(gameObject.transform.rotation);
+							gameObject.render(this.ctx);
+							this.ctx.restore();
+						}
 					}
 				}
-			}
-			this.ctx.restore();
+				this.ctx.restore();
 
-			//Over Map
-			this.ctx.save();
-			{
-				this.ctx.scale(1/this.cameraZoom, -1/this.cameraZoom);
-				this.ctx.scale(this.mapScale, this.mapScale);
-				this.renderOverMap();
+				// Over Map
+				this.ctx.save();
+				{
+					this.ctx.scale(1/this.cameraZoom, -1/this.cameraZoom);
+					this.ctx.scale(this.mapScale, this.mapScale);
+					this.renderMap(this.ctx, this.cameraZoom, "over");
+				}
+				this.ctx.restore();
 			}
 			this.ctx.restore();
 		}
 		this.ctx.restore();
 	},
-	renderMap() {
-		for(let x = 0; x < this.map.length; x++) {
-			for(let y = 0; y < this.map[x].length; y++) {
+	renderMap(context, zoom, kind) {
+		let left = context === this.ctx ? getScreenLeft() : getMinimapLeft();
+		let right = context === this.ctx ? getScreenRight() : getMinimapRight();
+		let top = context === this.ctx ? getScreenTop() : getMinimapTop();
+		let bottom = context === this.ctx ? getScreenBottom() : getMinimapBottom();
+		left = left < 0 ? left * zoom : left / zoom;
+		right = right < 0 ? right / zoom : right * zoom;
+		top = top < 0 ? top / zoom : top * zoom;
+		bottom = bottom < 0 ? bottom * zoom : bottom / zoom;
+		let topLeft = this.getMapLocation(left, top);
+		let bottomRight = this.getMapLocation(right, bottom);
+		for(let x = topLeft.x, xCounter = 0; x < bottomRight.x; x++, xCounter++) {
+			for(let y = topLeft.y, yCounter = 0; y < bottomRight.y; y++, yCounter++) {
 				if(this.map[x][y] != null) {
-					this.ctx.drawImage(this.map[x][y], x * this.tileSize - (this.gameWidth / (2 * this.tileSize) - 1) * this.tileSize, y * this.tileSize - (this.gameHeight / (2 * this.tileSize) - 1) * this.tileSize, this.tileSize, this.tileSize);
-				}
-			}
-		}
-	},
-	renderOverMap() {
-		for(let x = 0; x < this.map.length; x++) {
-			for(let y = 0; y < this.map[x].length; y++) {
-				if(this.map[x][y] != null) {
-					for(let i = 0; i < this.OVER_TILES.length; i++) {
-						if(this.map[x][y] === this.OVER_TILES[i]) {
-							this.ctx.drawImage(this.map[x][y], x * this.tileSize - (this.gameWidth / (2 * this.tileSize) - 1) * this.tileSize, y * this.tileSize - (this.gameHeight / (2 * this.tileSize) - 1) * this.tileSize, this.tileSize, this.tileSize);
-							break;
+					// Under
+					if(kind === "under") {
+						let found = false;
+						for(let i = 0; i < this.OVER_TILES.length; i++) {
+							if(this.map[x][y] === this.OVER_TILES[i]) {
+								found = true;
+								break;
+							}
+							
+						}
+						if(!found) {
+								context.drawImage(this.map[x][y], x * this.tileSize - this.gameWidth/2, y * this.tileSize - this.gameHeight/2, this.tileSize, this.tileSize);
 						}
 					}
-				}
-			}
-		}
-	},
-	renderUnderMap() {
-		for(let x = 0; x < this.map.length; x++) {
-			for(let y = 0; y < this.map[x].length; y++) {
-				if(this.map[x][y] != null) {
-					let found = false;
-					for(let i = 0; i < this.OVER_TILES.length; i++) {
-						if(this.map[x][y] === this.OVER_TILES[i]) {
-							found = true;
-							break;
+					// Over
+					else if(kind === "over") {
+						for(let i = 0; i < this.OVER_TILES.length; i++) {
+							if(this.map[x][y] === this.OVER_TILES[i]) {
+								context.drawImage(this.map[x][y], x * this.tileSize - this.gameWidth/2, y * this.tileSize - this.gameHeight/2, this.tileSize, this.tileSize);
+								break;
+							}
 						}
-						
-					}
-					if(!found) {
-						this.ctx.drawImage(this.map[x][y], x * this.tileSize - (this.gameWidth / (2 * this.tileSize) - 1) * this.tileSize, y * this.tileSize - (this.gameHeight / (2 * this.tileSize) - 1) * this.tileSize, this.tileSize, this.tileSize);
 					}
 				}
 			}
 		}
 	},
 	getMapTile(x, y) {
+		let position = this.getMapLocation(x, y);
+		return this.map[position.x][position.y];
+	},
+	getMapLocation(x, y) {
 		y = -y;
-		let middleX = this.gameWidth / (this.tileSize * 2) - 1;
-		let middleY = this.gameHeight / (this.tileSize * 2) - 1;
+		let middleX = this.gameWidth / this.tileSize / 2 - 1;
+		let middleY = this.gameHeight / this.tileSize / 2 - 1;
 
-		let adjustedX = middleX + Math.floor((x * this.mapScale * 3.5) / this.tileSize);
-		let adjustedY = middleY + Math.floor((y * this.mapScale * 3.5) / this.tileSize);
+		let adjustedX = middleX + Math.floor(x / this.tileSize);
+		let adjustedY = middleY + Math.floor(y / this.tileSize);
 
 		if(adjustedX < 0) {
 			adjustedX = 0;
@@ -521,7 +557,19 @@ var gameStateHandler = {
 			adjustedY = this.gameHeight / this.tileSize - 1;
 		}
 
-		return this.map[adjustedX][adjustedY];
+		return {x:adjustedX, y:adjustedY};
+	},
+	getScreenEntities() {
+		let entities = [];
+		for(let i = 0; i < this.hierachy.length; i++) {
+			if(this.hierachy[i].hasComponent(AttackComponent)) {
+				if(this.hierachy[i].inScreen() && !(this.hierachy[i] instanceof Player)) {
+					entities.push(this.hierachy[i]);
+				}
+			}
+		}
+
+		return entities;
 	}
 };
 
@@ -602,10 +650,4 @@ function scriptCallback(byteCode, value, preExtra, postExtra) {
 	else {
 		update({name: "interpreterOutput", output: preExtra + output + postExtra});
 	}
-}
-
-var MAP_CSV = "file://../Tile%20Map.csv";
-
-function fillMap(file, map) {
-	
 }

@@ -1,4 +1,7 @@
 function move(x, y) {
+	if(isNaN(x) || isNaN(y)) {
+		return false;
+	}
 	return gameStateHandler.player.updateMove(x, y);
 }
 
@@ -229,4 +232,84 @@ function executeScript(name) {
 	}
 
 	return errors.length === 0;
+}
+
+function getArray(arr, index) {
+	return arr[index];
+}
+
+function popArray(arr) {
+	return arr.pop();
+}
+
+function pushArray(arr, item) {
+	return arr.push(item);
+}
+
+function unshiftArray(arr, item) {
+	return arr.unshift(item);
+}
+
+function shiftArray(arr) {
+	return arr.shift();
+}
+
+function getAllMonsters() {
+	let monsters = gameStateHandler.getScreenEntities();
+	let monsterIds = [];
+	for(let i = 0; i < monsters.length; i++) {
+		monsterIds.push(monsters[i].id);
+	}
+
+	return monsterIds;
+}
+
+function getMonsterName(id) {
+	let monsters = gameStateHandler.getScreenEntities();
+	for(let i = 0; i < monsters.length; i++) {
+		if(id === monsters[i].id) {
+			return monsters[i].name;
+		}
+	}
+
+	return "";
+}
+
+function getMonsterLocation(id) {
+	let monsters = gameStateHandler.getScreenEntities();
+	for(let i = 0; i < monsters.length; i++) {
+		if(id === monsters[i].id) {
+			return [monsters[i].transform.position.x, monsters[i].transform.position.y];
+		}
+	}
+
+	return []
+}
+
+function sizeArray(arr) {
+	return arr.length;
+}
+
+function getLocation() {
+	return [gameStateHandler.player.transform.position.x, gameStateHandler.player.transform.position.y];
+}
+
+function stopScript(scriptName) {
+	let script = gameStateHandler.player.getScript(scriptName);
+	if(script === null) {
+		return false;
+	}
+
+	let running = script.running;
+	script.running = false;
+
+	return running;
+}
+
+function abs(number) {
+	return Math.abs(number);
+}
+
+function attack() {
+	return gameStateHandler.player.attack();
 }

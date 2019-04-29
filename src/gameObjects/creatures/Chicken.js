@@ -1,6 +1,6 @@
 class Chicken extends Entity {
 	constructor(xPosition=0, yPosition=0, xScale=1, yScale=1) {
-		super(xPosition, yPosition, xScale, yScale);
+		super("chicken", xPosition, yPosition, xScale, yScale);
 
 		let minimapBlock = new AxisAlignedRectangle(1, 1);
 		let blockRenderMinimap = new GeometryRendererComponent("yellow", minimapBlock);
@@ -19,6 +19,7 @@ class Chicken extends Entity {
 		this.components.push(new AttackComponent(this));
 
 		this.moveStatus = 0;
+		this.spawnRate = 3000;
 	}
 
 	defineBoundary() {
@@ -51,24 +52,21 @@ class Chicken extends Entity {
 
 	update() {
 		if(!this.isMoving()) {
-			switch(this.moveStatus) {
-				case 0:
-					this.updateMove(2, 0);
-					this.moveStatus++;
-					break;
-				case 1:
-					this.updateMove(0, 2);
-					this.moveStatus++;
-					break;
-				case 2:
-					this.updateMove(-2, 0);
-					this.moveStatus++;
-					break;
-				case 3:
-					this.updateMove(0, -2);
-					this.moveStatus = 0;
-					break;
+			let moveY = Math.random();
+			let moveX = Math.random();
+			if(moveY <= .005) {
+				moveY = Math.random() * (Math.random() >= .5 ? 1 : -1);
 			}
+			else {
+				moveY = 0;
+			}
+			if(moveX <= .005) {
+				moveX = Math.random() * (Math.random() >= .5 ? 1 : -1);
+			}
+			else {
+				moveX = 0;
+			}
+			this.updateMove(moveX, moveY);
 		}
 		super.update();
 	}

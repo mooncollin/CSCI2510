@@ -29,6 +29,8 @@ var loadStateHandler = {
 		totalImages = 0;
 		loadedImages = 0;
 
+		this.mapData = [];
+
 		images = {};
 
 		this.loadEquipmentImages(images);
@@ -45,7 +47,7 @@ var loadStateHandler = {
 		var imageLoadingInterval = setInterval(function() {
 			if(totalImages === loadedImages) {
 				clearInterval(imageLoadingInterval);
-				update({name: "next"});
+				update({name: "loadMapData"});
 			}
 		}, msBetweenFrames);
 	},
@@ -60,6 +62,30 @@ var loadStateHandler = {
 				this.update();
 				this.render();
 				break;
+			case "loadMapData":
+				let stringData = "";
+				fetch(MAP_CSV).then((response) => {
+					const reader = response.body.getReader();
+					reader.read().then(function processText({done, value}) {
+						if(done) {
+							let lines = stringData.split('\n');
+							for(let i = 0; i < lines.length - 1; i++) {
+								loadStateHandler.mapData.push([]);
+								let values = lines[i].split(',');
+								for(let j = 0; j < values.length; j++) {
+									loadStateHandler.mapData[i].push(parseInt(values[j]));
+								}
+								
+							}
+							update({name: "next"});
+							return;
+						}
+
+						stringData += new TextDecoder("ascii").decode(value);
+
+						return reader.read().then(processText);
+					});
+				});
 		}
 	},
 	update() {
@@ -139,3 +165,5 @@ var loadStateHandler = {
 function loadImage() {
 	loadedImages++;
 }
+
+var MAP_CSV = "https://raw.githubusercontent.com/mooncollin/CSCI2510/master/src/Tile%20Map.csv";

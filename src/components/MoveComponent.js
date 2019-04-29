@@ -55,64 +55,70 @@ class MoveComponent extends Component {
 		};
 
 		gameObject.canMoveX = function(x) {
-			let tiles = []
-			if(gameObject.hasComponent(CollidingComponent)) {
-				let currentX = gameObject.transform.position.x;
-				if(x < 0) {
-					currentX = gameObject.getBoundaryLeft();
-				}
-				else {
-					currentX = gameObject.getBoundaryRight();
-				}
-				tiles.push(gameStateHandler.getMapTile(currentX + x, gameObject.transform.position.y));
-				tiles.push(gameStateHandler.getMapTile(currentX + x, gameObject.getBoundaryTop()));
-				tiles.push(gameStateHandler.getMapTile(currentX + x, gameObject.getBoundaryBottom()));
-			}
-			else {
-				tiles.push(gameStateHandler.getMapTile(gameObject.transform.position.x + x, gameObject.transform.position.y));
-			}
+			// let tiles = []
+			// if(gameObject.hasComponent(CollidingComponent)) {
+			// 	let currentX = gameObject.transform.position.x;
+			// 	if(x < 0) {
+			// 		currentX = gameObject.getBoundaryLeft();
+			// 	}
+			// 	else {
+			// 		currentX = gameObject.getBoundaryRight();
+			// 	}
+			// 	tiles.push(gameStateHandler.getMapTile((currentX + x) * gameObject.transform.scale.x * gameStateHandler.cameraZoom * gameStateHandler.mapScale, gameObject.transform.position.y  * gameObject.transform.scale.x * gameStateHandler.cameraZoom * gameStateHandler.mapScale * 2));
+			// 	tiles.push(gameStateHandler.getMapTile((currentX + x) * gameObject.transform.scale.x * gameStateHandler.cameraZoom * gameStateHandler.mapScale, gameObject.getBoundaryTop()  * gameObject.transform.scale.x * gameStateHandler.cameraZoom * gameStateHandler.mapScale * 2));
+			// 	tiles.push(gameStateHandler.getMapTile((currentX + x) * gameObject.transform.scale.x * gameStateHandler.cameraZoom * gameStateHandler.mapScale, gameObject.getBoundaryBottom()  * gameObject.transform.scale.x * gameStateHandler.cameraZoom * gameStateHandler.mapScale * 2));
+			// }
+			// else {
+			// 	tiles.push(gameStateHandler.getMapTile((gameObject.transform.position.x + x) * gameObject.transform.scale.x * gameStateHandler.cameraZoom * gameStateHandler.mapScale, (gameObject.transform.position.y)  * gameObject.transform.scale.x * gameStateHandler.cameraZoom * gameStateHandler.mapScale * 2));
+			// }
 
-			for(let i = 0; i < gameStateHandler.IMPASSIBLE_TILES.length; i++) {
-				for(let j = 0; j < tiles.length; j++) {
-					if(tiles[j] === gameStateHandler.IMPASSIBLE_TILES[i]) {
-						return false;
-					}
-				}
-			}
+			// for(let i = 0; i < gameStateHandler.IMPASSIBLE_TILES.length; i++) {
+			// 	for(let j = 0; j < tiles.length; j++) {
+			// 		if(tiles[j] === gameStateHandler.IMPASSIBLE_TILES[i]) {
+			// 			return false;
+			// 		}
+			// 	}
+			// }
 			return true;
 		};
 
 		gameObject.canMoveY = function(y) {
-			let tiles = [];
-			if(gameObject.hasComponent(CollidingComponent)) {
-				let currentY = gameObject.transform.position.y;
-				if(y < 0) {
-					currentY = gameObject.getBoundaryBottom();
-				}
-				else {
-					currentY = gameObject.getBoundaryTop();
-				}
-				tiles.push(gameStateHandler.getMapTile(gameObject.transform.position.x, currentY + y));
-				tiles.push(gameStateHandler.getMapTile(gameObject.getBoundaryLeft(), currentY + y));
-				tiles.push(gameStateHandler.getMapTile(gameObject.getBoundaryRight(), currentY + y));
-			}
-			else {
-				tiles.push(gameStateHandler.getMapTile(gameObject.transform.position.x, gameObject.transform.position.y + y));
-			}
-			for(let i = 0; i < gameStateHandler.IMPASSIBLE_TILES.length; i++) {
-				for(let j = 0; j < tiles.length; j++) {
-					if(tiles[j] === gameStateHandler.IMPASSIBLE_TILES[i]) {
-						return false;
-					}
-				}
-			}
+			// let tiles = [];
+			// if(gameObject.hasComponent(CollidingComponent)) {
+			// 	let currentY = gameObject.transform.position.y;
+			// 	if(y < 0) {
+			// 		currentY = gameObject.getBoundaryBottom();
+			// 	}
+			// 	tiles.push(gameStateHandler.getMapTile((gameObject.transform.position.x) * gameObject.transform.scale.x * gameStateHandler.cameraZoom * gameStateHandler.mapScale, (currentY + y)  * gameObject.transform.scale.x * gameStateHandler.cameraZoom * gameStateHandler.mapScale * 2));
+			// 	tiles.push(gameStateHandler.getMapTile((gameObject.getBoundaryLeft()) * gameObject.transform.scale.x * gameStateHandler.cameraZoom * gameStateHandler.mapScale, (currentY + y)  * gameObject.transform.scale.x * gameStateHandler.cameraZoom * gameStateHandler.mapScale * 2));
+			// 	tiles.push(gameStateHandler.getMapTile((gameObject.getBoundaryRight()) * gameObject.transform.scale.x * gameStateHandler.cameraZoom * gameStateHandler.mapScale, (currentY + y)  * gameObject.transform.scale.x * gameStateHandler.cameraZoom * gameStateHandler.mapScale * 2));
+			// }
+			// else {
+			// 	tiles.push(gameStateHandler.getMapTile((gameObject.transform.position.x) * gameObject.transform.scale.x * gameStateHandler.cameraZoom * gameStateHandler.mapScale, (gameObject.transform.position.y + y) * 16));
+			// }
+			// for(let i = 0; i < gameStateHandler.IMPASSIBLE_TILES.length; i++) {
+			// 	for(let j = 0; j < tiles.length; j++) {
+			// 		if(tiles[j] === gameStateHandler.IMPASSIBLE_TILES[i]) {
+			// 			return false;
+			// 		}
+			// 	}
+			// }
 			return true;
 		};
 
 		gameObject.updateMove = function(x, y) {
-			gameObject.requestedX = x + gameObject.transform.position.x;
-			gameObject.requestedY = y + gameObject.transform.position.y;
-			return true;
+			if(!isNaN(x) && !isNaN(y) && x != null && y != null) {
+				gameObject.requestedX = x + gameObject.transform.position.x;
+				gameObject.requestedY = y + gameObject.transform.position.y;
+				if(gameObject.requestedX === NaN) {
+					gameObject.requestedX = 0;
+				}
+				if(gameObject.requestedY === NaN) {
+					gameObject.requestedY = 0;
+				}
+				return true;
+			}
+			return false;
 		};
 
 		gameObject.isMoving = function() {

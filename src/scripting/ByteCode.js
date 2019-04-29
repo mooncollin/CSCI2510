@@ -310,7 +310,7 @@ class ByteCodeIF extends ByteCode {
 	}
 
 	executeLine(lineNum) {
-		if(lineNum < this.code.length) {
+		if(lineNum < this.code.length && this.script.running) {
 			
 			if(typeof this.code[lineNum].moveFromTempVariables === "function") {
 				this.code[lineNum].script = this.script;
@@ -379,7 +379,7 @@ class ByteCodeWHILE extends ByteCode {
 	}
 
 	executeLine(lineNum) {
-		if(lineNum < this.code.length) {
+		if(lineNum < this.code.length && this.script.running) {
 			
 			if(typeof this.code[lineNum].moveFromTempVariables === "function") {
 				this.code[lineNum].script = this.script;

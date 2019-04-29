@@ -594,7 +594,7 @@ class Script {
 	}
 
 	executeLine(lineNum) {
-		if(lineNum < this.byteCode.length) {
+		if(lineNum < this.byteCode.length && this.running) {
 			
 			if(typeof this.byteCode[lineNum].moveFromTempVariables === "function") {
 				this.byteCode[lineNum].script = this;
@@ -686,9 +686,19 @@ function executeNext(code, lineNum, callingObj) {
 				clearInterval(executingLineInterval);
 				setTimeout(executeLineFunction, callingObj.getEntity().executionSpeed);
 			}
+			if(callingObj instanceof Script) {
+				if(!callingObj.running) {
+					clearInterval(executingLineInterval);
+				}
+				
+			}
+			else if(!callingObj.script.running) {
+				clearInterval(executingLineInterval);
+			}
 		}, 50);
 	}
-	else {
+	else if(callingObj instanceof Script && callingObj.running
+		|| callingObj.script.running) {
 		setTimeout(executeLineFunction, callingObj.getEntity().executionSpeed);
 	}
 }

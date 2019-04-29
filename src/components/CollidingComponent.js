@@ -25,16 +25,11 @@ class CollidingComponent extends Component {
 				return false;
 			}
 
-			let secondLeft = -secondWidth/2 + other.boundary.offsetX * other.transform.scale.x + other.transform.position.x;
-			let secondTop = secondHeight/2 + other.boundary.offsetY * other.transform.scale.y + other.transform.position.y;
-			let secondRight = secondLeft + secondWidth;
-			let secondBottom = secondTop - secondHeight;
-
 			return gameObject.inCollisionPoints(
 				new Vector2(gameObject.getBoundaryLeft(), gameObject.getBoundaryTop()),
 				new Vector2(gameObject.getBoundaryRight(), gameObject.getBoundaryBottom()),
-				new Vector2(secondLeft, secondTop),
-				new Vector2(secondRight, secondBottom)
+				new Vector2(other.getBoundaryLeft(), other.getBoundaryTop()),
+				new Vector2(other.getBoundaryRight(), other.getBoundaryBottom())
 			);
 		};
 
@@ -50,25 +45,17 @@ class CollidingComponent extends Component {
 		};
 
 		gameObject.inScreen = function() {
-			let secondWidth = gameStateHandler.width/gameStateHandler.cameraZoom;
-			let secondHeight = gameStateHandler.height/gameStateHandler.cameraZoom;
-
-			let screenLeft = gameStateHandler.player.transform.position.x + -secondWidth/2;
-			let screenTop = gameStateHandler.player.transform.position.y + secondHeight/2;
-			let screenRight = screenLeft + secondWidth;
-			let screenBottom = screenTop - secondHeight;
-
 			return gameObject.inCollisionPoints(
 				new Vector2(gameObject.getBoundaryLeft(), gameObject.getBoundaryTop()),
 				new Vector2(gameObject.getBoundaryRight(), gameObject.getBoundaryBottom()),
-				new Vector2(screenLeft, screenTop),
-				new Vector2(screenRight, screenBottom)
+				new Vector2(getScreenLeft(), getScreenTop()),
+				new Vector2(getScreenRight(), getScreenBottom())
 			);
 		};
 
 		gameObject.inMinimap = function() {
-			let secondWidth = gameStateHandler.width/(gameStateHandler.minimapZoom*3.2);
-			let secondHeight = gameStateHandler.height/(gameStateHandler.minimapZoom*3.2);
+			let secondWidth = gameStateHandler.width/(gameStateHandler.minimapZoom*2);
+			let secondHeight = gameStateHandler.height/(gameStateHandler.minimapZoom*2);
 
 			let screenLeft = gameStateHandler.player.transform.position.x + -secondWidth/2;
 			let screenTop = gameStateHandler.player.transform.position.y + secondHeight/2;
@@ -78,11 +65,11 @@ class CollidingComponent extends Component {
 			return gameObject.inCollisionPoints(
 				new Vector2(gameObject.getBoundaryLeft(), gameObject.getBoundaryTop()),
 				new Vector2(gameObject.getBoundaryRight(), gameObject.getBoundaryBottom()),
-				new Vector2(screenLeft, screenTop),
-				new Vector2(screenRight, screenBottom)
+				new Vector2(getMinimapLeft(), getMinimapTop()),
+				new Vector2(getMinimapRight(), getMinimapBottom())
 			);
 		};
-
+		
 		gameObject.getAdjustedWidth = function() {
 			return gameObject.boundary.geometry.width * gameObject.transform.scale.x;
 		};
@@ -113,3 +100,51 @@ var COLLISION_TYPES = {
 	PASSIVE: "passive",
 	ACTIVE: "active"
 };
+
+function getScreenWidth() {
+	return gameStateHandler.width/gameStateHandler.cameraZoom;
+}
+
+function getScreenHeight() {
+	return gameStateHandler.height/gameStateHandler.cameraZoom;
+}
+
+function getScreenLeft() {
+	return gameStateHandler.player.transform.position.x + -getScreenWidth()/2;
+}
+
+function getScreenTop() {
+	return gameStateHandler.player.transform.position.y + getScreenHeight()/2;
+}
+
+function getScreenRight() {
+	return getScreenLeft() + getScreenWidth();
+}
+
+function getScreenBottom() {
+	return getScreenTop() - getScreenHeight();
+}
+
+function getMinimapWidth() {
+	return gameStateHandler.width/(gameStateHandler.minimapZoom*2);
+}
+
+function getMinimapHeight() {
+	return gameStateHandler.height/(gameStateHandler.minimapZoom*2);
+}
+
+function getMinimapLeft() {
+	return gameStateHandler.player.transform.position.x - getMinimapWidth()/2;
+}
+
+function getMinimapTop() {
+	return gameStateHandler.player.transform.position.y + getMinimapHeight()/2;
+}
+
+function getMinimapRight() {
+	return getMinimapLeft() + getMinimapWidth();
+}
+
+function getMinimapBottom() {
+	return getMinimapTop() - getMinimapHeight();
+}

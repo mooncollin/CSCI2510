@@ -1,9 +1,11 @@
 //A generic GameObject class
 class GameObject {
-	constructor(xPosition=0, yPosition=0, xScale=1, yScale=1) {
+	constructor(name, xPosition=0, yPosition=0, xScale=1, yScale=1) {
 		this.transform = new Transform(new Vector2(xPosition, yPosition), new Vector2(xScale, yScale));
 		this.components = [];
 		this.minimapComponents = [];
+		this.name = name;
+		this.id = Math.ceil(Math.random() * 100000000);
 	}
 
 	render(ctx) {

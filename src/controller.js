@@ -13,6 +13,6 @@ function update(event) {
 }
 
 var updateListeners = [];
-var msBetweenFrames = 1000 / 30;
+var msBetweenFrames = 1000 / 60;
 var Time = {};
 Time.deltaTime = msBetweenFrames / 1000;

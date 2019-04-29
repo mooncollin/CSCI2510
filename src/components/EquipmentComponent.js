@@ -13,10 +13,8 @@ class EquipmentComponent extends Component {
 			gameObject.equipmentTransforms[EQUIPMENT_TYPES[i]] = [];
 		}
 
-		gameObject.attack = 0;
+		gameObject.offense = 0;
 		gameObject.defense = 0;
-
-		
 
 		gameObject.nothingEquipmentSlot = function(slot) {
 			let result = [];
@@ -76,7 +74,7 @@ class EquipmentComponent extends Component {
 
 		gameObject.refreshEquipment = function() {
 			gameObject.defense = 0;
-			gameObject.attack = 0;
+			gameObject.offense = 0;
 			for(let i = 0; i < gameObject.components.length; i++) {
 				if(gameObject.components[i] instanceof Equipment) {
 					gameObject.components.splice(i, 1);
@@ -86,7 +84,7 @@ class EquipmentComponent extends Component {
 			for(let i = 0; i < EQUIPMENT_TYPES.length; i++) {
 				gameObject.components.push(gameObject.equipment[EQUIPMENT_TYPES[i]]);
 				gameObject.defense += gameObject.equipment[EQUIPMENT_TYPES[i]].attributes.defense;
-				gameObject.attack += gameObject.equipment[EQUIPMENT_TYPES[i]].attributes.attack;
+				gameObject.offense += gameObject.equipment[EQUIPMENT_TYPES[i]].attributes.offense;
 			}
 		};
 
