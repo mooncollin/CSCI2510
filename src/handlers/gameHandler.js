@@ -343,7 +343,7 @@ var gameStateHandler = {
 			["Level", this.player.level],
 			["Health", this.player.health],
 			["Defense", this.player.defense],
-			["Attack", this.player.attack],
+			["Attack", this.player.offense],
 			["Movement Speed", this.player.speed],
 			["Execution Speed", Math.pow(this.player.executionSpeed / PLAYER_STARTING_EXECUTION_SPEED, -1).toFixed(2)],
 			["Number of scripts", this.player.scripts.length]
