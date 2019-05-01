@@ -21,7 +21,7 @@ function nothing(slot) {
 
 function baseAttributes() {
 	return {
-		"attack"	: 0,
+		"offense"	: 0,
 		"defense"	: 0,
 		"color"		: "",
 		"type"		: EQUIPMENT_ATTRIBUTES_TYPES.NONE
@@ -44,7 +44,7 @@ var EQUIPMENT_TYPES = [
 ];
 
 var EQUIPMENT_ATTRIBUTES = [
-	"attack",
+	"offense",
 	"defense",
 	"color",
 	"type"
